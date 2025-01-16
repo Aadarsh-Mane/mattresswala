@@ -7,6 +7,7 @@ import adminRouter from "./routes/admin.js";
 import { loginUser } from "./controllers/userLogin.js";
 import salesRouter from "./routes/sales.js";
 import productionRouter from "./routes/production.js";
+import deliveryRouter from "./routes/delivery.js";
 const port = 3000;
 
 const app = express();
@@ -18,6 +19,7 @@ app.use(cors());
 app.use("/admin", adminRouter);
 app.use("/sales", salesRouter);
 app.use("/prod", productionRouter);
+app.use("/delivery", deliveryRouter);
 connectDB();
 app.get("/", (req, res) => {
   return res.status(200).json("Welcome to MattressWala!");
