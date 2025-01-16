@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 
 const dbURI =
-  "mongodb+srv://setulankur:setu123@cluster0.tzdjw.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
+  "mongodb+srv://setulankur:setu123@cluster0.tzdjw.mongodb.net/matress?retryWrites=true&w=majority&appName=Cluster0";
 export const connectDB = async () => {
   const options = {
     useNewUrlParser: true, // Deprecated, but necessary in older versions
