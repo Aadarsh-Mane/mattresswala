@@ -1,4 +1,5 @@
 import Order from "../../models/orderSchema.js";
+import moment from "moment-timezone";
 
 export const updateDeliveryStatus = async (req, res) => {
   try {
@@ -22,7 +23,17 @@ export const updateDeliveryStatus = async (req, res) => {
         .status(403)
         .json({ message: "Only delivery team can update the status." });
     }
-
+    if (
+      order.deliveryTeam.id &&
+      order.deliveryTeam.id.toString() !== deliveryPersonId
+    ) {
+      return res
+        .status(409) // Conflict
+        .json({
+          message:
+            "Another delievery team member is already working on this order.",
+        });
+    }
     const now = moment().tz("Asia/Kolkata");
 
     // Update delivery status and remarks

@@ -1,10 +1,8 @@
 import Order from "../../models/orderSchema.js";
-
+import moment from "moment-timezone";
 export const updateProductionStatus = async (req, res) => {
   try {
     const { orderNo, status, remarks } = req.body;
-    console.log("Request Body:", req.body);
-
     const productionPersonId = req.userId;
     const productionPersonName = req.userName;
 
@@ -21,6 +19,28 @@ export const updateProductionStatus = async (req, res) => {
       return res
         .status(403)
         .json({ message: "Only production team can update the status." });
+    }
+
+    // Check if another production person is already working on the order
+    if (
+      order.productionTeam.id &&
+      order.productionTeam.id.toString() !== productionPersonId
+    ) {
+      return res
+        .status(409) // Conflict
+        .json({
+          message:
+            "Another production team member is already working on this order.",
+        });
+    }
+
+    // Check if the status is already "Started"
+    if (order.productionTeam.status === "Started" && status === "Started") {
+      return res
+        .status(400) // Bad Request
+        .json({
+          message: "Production work has already been started for this order.",
+        });
     }
 
     const now = moment().tz("Asia/Kolkata");

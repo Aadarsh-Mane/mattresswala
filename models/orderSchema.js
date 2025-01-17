@@ -96,7 +96,7 @@ const orderSchema = new mongoose.Schema({
       type: String,
       default: null, // Initially not assigned
     },
-    dispactchDate: {
+    dispatchDate: {
       type: String,
       default: null, // Initially not assigned
     },
