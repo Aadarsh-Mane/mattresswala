@@ -2,6 +2,9 @@ import allUsersSchema from "../../models/allUsersSchema.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import Order from "../../models/orderSchema.js";
+import SalesUser from "../../models/salesUserSchema.js";
+import ProductionUser from "../../models/productionSchema.js";
+import DeliveryUser from "../../models/deliverySchema.js";
 const SECRET = "MATRESS";
 export const addUser = async (req, res) => {
   try {
@@ -79,6 +82,51 @@ export const listAllOrders = async (req, res) => {
     console.error(error);
     res.status(500).json({
       message: "Error fetching orders.",
+      error: error.message,
+    });
+  }
+};
+const schemaMap = {
+  sales: SalesUser,
+  production: ProductionUser,
+  delivery: DeliveryUser,
+};
+
+export const getProfile = async (req, res) => {
+  try {
+    const { userId, userType } = req;
+
+    // Validate input
+    if (!userId || !userType) {
+      return res
+        .status(400)
+        .json({ message: "User ID and user type are required." });
+    }
+
+    // Find the corresponding schema based on userType
+    const UserModel = schemaMap[userType.toLowerCase()];
+
+    if (!UserModel) {
+      return res.status(400).json({ message: "Invalid user type provided." });
+    }
+
+    // Query the user profile from the appropriate schema
+    const user = await UserModel.findById(userId).select("-password");
+
+    // Check if the user exists
+    if (!user) {
+      return res.status(404).json({ message: "User not found." });
+    }
+
+    // Respond with the profile
+    res.status(200).json({
+      message: "Profile retrieved successfully.",
+      profile: user,
+    });
+  } catch (error) {
+    console.error("Error fetching profile:", error);
+    res.status(500).json({
+      message: "Error retrieving profile.",
       error: error.message,
     });
   }

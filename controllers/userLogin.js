@@ -73,7 +73,7 @@ export const loginUser = async (req, res) => {
     res.status(200).json({
       message: "Login successful.",
       token,
-      userType: userToInsert.usertype,
+      usertype: userToInsert.usertype,
     });
   } catch (error) {
     console.error("Login error:", error);

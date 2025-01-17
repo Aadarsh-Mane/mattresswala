@@ -8,7 +8,11 @@ import { loginUser } from "./controllers/userLogin.js";
 import salesRouter from "./routes/sales.js";
 import productionRouter from "./routes/production.js";
 import deliveryRouter from "./routes/delivery.js";
-import { listAllOrders } from "./controllers/admin/adminController.js";
+import {
+  getProfile,
+  listAllOrders,
+} from "./controllers/admin/adminController.js";
+import { auth } from "./middleware/auth.js";
 const port = 3000;
 
 const app = express();
@@ -25,8 +29,9 @@ connectDB();
 app.get("/", (req, res) => {
   return res.status(200).json("Welcome to MattressWala!");
 });
-app.post("/api/v1/login", loginUser);
+app.post("/login", loginUser);
 app.get("/listOrders", listAllOrders);
+app.get("/getProfile", auth, getProfile);
 server.listen(port, "0.0.0.0", () => {
   console.log(`Server is running on port http://localhost:${port}`);
 });
