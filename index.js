@@ -8,6 +8,7 @@ import { loginUser } from "./controllers/userLogin.js";
 import salesRouter from "./routes/sales.js";
 import productionRouter from "./routes/production.js";
 import deliveryRouter from "./routes/delivery.js";
+import { listAllOrders } from "./controllers/admin/adminController.js";
 const port = 3000;
 
 const app = express();
@@ -25,6 +26,7 @@ app.get("/", (req, res) => {
   return res.status(200).json("Welcome to MattressWala!");
 });
 app.post("/api/v1/login", loginUser);
+app.get("/listOrders", listAllOrders);
 server.listen(port, "0.0.0.0", () => {
   console.log(`Server is running on port http://localhost:${port}`);
 });

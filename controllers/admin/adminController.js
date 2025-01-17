@@ -1,6 +1,7 @@
 import allUsersSchema from "../../models/allUsersSchema.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import Order from "../../models/orderSchema.js";
 const SECRET = "MATRESS";
 export const addUser = async (req, res) => {
   try {
@@ -64,5 +65,21 @@ export const getAllUsers = async (req, res) => {
     res
       .status(500)
       .json({ message: "An error occurred while fetching users.", error });
+  }
+};
+export const listAllOrders = async (req, res) => {
+  try {
+    const orders = await Order.find(); // Fetch all orders from the database
+
+    res.status(200).json({
+      message: "Orders fetched successfully.",
+      orders,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      message: "Error fetching orders.",
+      error: error.message,
+    });
   }
 };
