@@ -130,7 +130,7 @@ const orderSchema = new mongoose.Schema({
     status: {
       type: String,
       required: true,
-      enum: ["Waiting", "Dispatched"],
+      enum: ["Waiting", "Dispatched", "Arrived"],
       default: "Waiting", // Default status
     },
     dispatchDate: {
@@ -138,6 +138,14 @@ const orderSchema = new mongoose.Schema({
       default: null, // Initially not assigned
     },
     dispatchTime: {
+      type: String,
+      default: null, // Initially not assigned
+    },
+    arrivedDate: {
+      type: String,
+      default: null, // Initially not assigned
+    },
+    arrivedTime: {
       type: String,
       default: null, // Initially not assigned
     },

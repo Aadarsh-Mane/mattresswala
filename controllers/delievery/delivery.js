@@ -64,6 +64,10 @@ export const updateDeliveryStatus = async (req, res) => {
       order.deliveryTeam.dispatchDate = now.format("YYYY-MM-DD");
       order.deliveryTeam.dispatchTime = now.format("hh:mm A");
     }
+    if (status === "Arrived" && !order.deliveryTeam.arrivedDate) {
+      order.deliveryTeam.arrivedDate = now.format("YYYY-MM-DD");
+      order.deliveryTeam.arrivedTime = now.format("hh:mm A");
+    }
 
     // Save the updated order
     await order.save();

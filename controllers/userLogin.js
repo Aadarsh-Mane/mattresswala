@@ -4,6 +4,7 @@ import SalesUser from "../models/salesUserSchema.js";
 import ProductionUser from "../models/productionSchema.js";
 import DeliveryUser from "../models/deliverySchema.js";
 import allUsersSchema from "../models/allUsersSchema.js";
+import AdminUser from "../models/adminSchema.js";
 const SECRET = "MATRESS";
 export const loginUser = async (req, res) => {
   try {
@@ -54,6 +55,12 @@ export const loginUser = async (req, res) => {
       userToInsert = await DeliveryUser.findOne({ email });
       if (!userToInsert) {
         userToInsert = new DeliveryUser(userData);
+        await userToInsert.save();
+      }
+    } else if (user.usertype === "admin") {
+      userToInsert = await AdminUser.findOne({ email });
+      if (!userToInsert) {
+        userToInsert = new AdminUser(userData);
         await userToInsert.save();
       }
     } else {

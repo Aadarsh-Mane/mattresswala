@@ -5,6 +5,7 @@ import Order from "../../models/orderSchema.js";
 import SalesUser from "../../models/salesUserSchema.js";
 import ProductionUser from "../../models/productionSchema.js";
 import DeliveryUser from "../../models/deliverySchema.js";
+import AdminUser from "../../models/adminSchema.js";
 const SECRET = "MATRESS";
 export const addUser = async (req, res) => {
   try {
@@ -90,6 +91,7 @@ const schemaMap = {
   sales: SalesUser,
   production: ProductionUser,
   delivery: DeliveryUser,
+  admin: AdminUser,
 };
 
 export const getProfile = async (req, res) => {
@@ -154,5 +156,70 @@ export const getOrderDetails = async (req, res) => {
     return res
       .status(500)
       .json({ message: "Server Error", error: error.message });
+  }
+};
+export const filterOrders = async (req, res) => {
+  try {
+    const { team, status } = req.query;
+
+    // Validate required parameters
+    if (!team || !status) {
+      return res.status(400).json({
+        message: "Both 'team' and 'status' query parameters are required.",
+      });
+    }
+
+    // Map team query to the appropriate field in the schema
+    const teamFields = {
+      productionTeam: "productionTeam.status",
+      salesTeam: "salesPerson.remarks", // Replace with an appropriate field if sales team has a status
+      deliveryTeam: "deliveryTeam.status",
+    };
+
+    if (!teamFields[team]) {
+      return res.status(400).json({
+        message:
+          "Invalid team specified. Choose from 'productionTeam', 'salesTeam', or 'deliveryTeam'.",
+      });
+    }
+
+    // Build the filter query
+    const filter = {
+      [teamFields[team]]: status,
+    };
+
+    // Fetch orders matching the filter
+    const orders = await Order.find(filter);
+
+    if (orders.length === 0) {
+      return res.status(404).json({
+        message: "No orders found matching the specified criteria.",
+      });
+    }
+
+    return res.status(200).json(orders);
+  } catch (error) {
+    console.error("Error filtering orders:", error);
+    res.status(500).json({
+      message: "An error occurred while filtering orders.",
+      error: error.message,
+    });
+  }
+};
+export const listOrdersWithDeliveryDone = async (req, res) => {
+  try {
+    // Query to find orders with productionTeam.status = 'Done'
+    const orders = await Order.find({ "deliveryTeam.status": "Arrived" });
+
+    res.status(200).json({
+      message: "Orders with delivery  arrived fetched successfully.",
+      orders,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      message: "Error fetching orders with delivery arrived.",
+      error: error.message,
+    });
   }
 };
