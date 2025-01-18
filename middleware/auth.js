@@ -18,7 +18,7 @@ export const auth = (req, res, next) => {
       req.userType = user.userType;
       req.userName = user.userName;
 
-      console.log("User Type:", req.usertype);
+      console.log("User Type:", req.userType);
       console.log("User ID:", req.userId);
     } else {
       console.log("Token not provided.");

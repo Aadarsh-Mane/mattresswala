@@ -131,3 +131,28 @@ export const getProfile = async (req, res) => {
     });
   }
 };
+export const getOrderDetails = async (req, res) => {
+  try {
+    // Get the orderNo from the request parameters or body
+    const { orderNo } = req.params;
+
+    // Find the order by orderNo
+    const order = await Order.findOne({ orderNo });
+
+    // If no order is found, return a 404 error
+    if (!order) {
+      return res.status(404).json({ message: "Order not found" });
+    }
+
+    // Return the found order as a JSON response
+    return res.status(200).json(order);
+  } catch (error) {
+    // Log the error for debugging
+    console.error(error);
+
+    // Return a 500 error if something goes wrong
+    return res
+      .status(500)
+      .json({ message: "Server Error", error: error.message });
+  }
+};

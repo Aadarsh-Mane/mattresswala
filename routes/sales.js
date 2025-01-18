@@ -1,5 +1,9 @@
 import express from "express";
-import { createOrder } from "../controllers/sales/createOrder.js";
+import {
+  createOrder,
+  getLatestOrderBySalesPerson,
+  getOrdersBySalesPerson,
+} from "../controllers/sales/createOrder.js";
 import upload from "../middleware/multer.js";
 import { auth } from "../middleware/auth.js";
 const salesRouter = express.Router();
@@ -13,6 +17,8 @@ salesRouter.post(
   upload.single("itemImage"),
   createOrder
 );
+salesRouter.get("/myOrders", auth, getOrdersBySalesPerson);
+salesRouter.get("/latestOrder", auth, getLatestOrderBySalesPerson);
 // salesRouter.get("/api/v1/listAllUsers", getAllUsers);
 // salesRouter.post("/signin", );
 

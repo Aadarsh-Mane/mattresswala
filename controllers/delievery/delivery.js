@@ -1,6 +1,22 @@
 import Order from "../../models/orderSchema.js";
 import moment from "moment-timezone";
+export const listOrdersWithProductionDone = async (req, res) => {
+  try {
+    // Query to find orders with productionTeam.status = 'Done'
+    const orders = await Order.find({ "productionTeam.status": "Done" });
 
+    res.status(200).json({
+      message: "Orders with production completed fetched successfully.",
+      orders,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      message: "Error fetching orders with production completed.",
+      error: error.message,
+    });
+  }
+};
 export const updateDeliveryStatus = async (req, res) => {
   try {
     const { orderNo, status, remarks } = req.body;

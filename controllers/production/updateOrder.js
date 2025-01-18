@@ -5,7 +5,7 @@ export const updateProductionStatus = async (req, res) => {
     const { orderNo, status, remarks } = req.body;
     const productionPersonId = req.userId;
     const productionPersonName = req.userName;
-
+    console.log(req.body);
     // Find the order by orderNo
     const order = await Order.findOne({ orderNo });
 
@@ -57,9 +57,9 @@ export const updateProductionStatus = async (req, res) => {
       order.productionTeam.assignedTime = now.format("hh:mm A");
     }
 
-    if (status === "Dispatched" && !order.productionTeam.dispatchDate) {
-      order.productionTeam.dispatchDate = now.format("YYYY-MM-DD");
-      order.productionTeam.dispatchTime = now.format("hh:mm A");
+    if (status === "Done" && !order.productionTeam.workDoneDate) {
+      order.productionTeam.workDoneDate = now.format("YYYY-MM-DD");
+      order.productionTeam.workDoneTime = now.format("hh:mm A");
     }
 
     // Save the updated order
@@ -76,5 +76,25 @@ export const updateProductionStatus = async (req, res) => {
       message: "Error updating production status.",
       error: error.message,
     });
+  }
+};
+export const getCreatedOrders = async (req, res) => {
+  try {
+    // Get the trUserId (salesperson ID) from the request params
+    // Find orders where the sales person's ID matches the provided trUserId
+    const orders = await Order.find();
+
+    if (!orders || orders.length === 0) {
+      return res
+        .status(404)
+        .json({ message: "No orders found for production." });
+    }
+
+    // Return the orders found
+    return res.status(200).json(orders);
+  } catch (error) {
+    // Handle errors and send response
+    console.error(error);
+    return res.status(500).json({ message: "Server error, please try again." });
   }
 };

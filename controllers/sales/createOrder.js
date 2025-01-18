@@ -29,7 +29,7 @@ export const createOrder = async (req, res) => {
     const { partyName, city, mobileNo, item, remarks } = req.body;
     const salesPersonId = req.userId;
     const salesPersonName = req.userName;
-
+    console.log(req.body);
     if (!partyName || !city || !mobileNo || !item) {
       return res
         .status(400)
@@ -99,5 +99,56 @@ export const createOrder = async (req, res) => {
     res
       .status(500)
       .json({ message: "Error while creating order.", error: error.message });
+  }
+};
+
+export const getOrdersBySalesPerson = async (req, res) => {
+  try {
+    // Get the trUserId (salesperson ID) from the request params
+    const salesId = req.userId;
+    // Find orders where the sales person's ID matches the provided trUserId
+    const orders = await Order.find({
+      "salesPerson.id": salesId,
+    });
+
+    if (!orders || orders.length === 0) {
+      return res
+        .status(404)
+        .json({ message: "No orders found for this salesperson." });
+    }
+
+    // Return the orders found
+    return res.status(200).json(orders);
+  } catch (error) {
+    // Handle errors and send response
+    console.error(error);
+    return res.status(500).json({ message: "Server error, please try again." });
+  }
+};
+export const getLatestOrderBySalesPerson = async (req, res) => {
+  try {
+    // Extract userId (salesperson's ID) from the request parameters
+    // const { userId } = req.params;
+    const salesId = req.userId;
+
+    // Find the latest order created by the salesperson
+    const latestOrder = await Order.findOne({
+      "salesPerson.id": salesId, // Match the salesperson's ID
+    })
+      .sort({ orderDate: -1, orderTime: -1 }) // Sort by order date and time in descending order
+      .limit(1); // Only get the most recent order
+
+    if (!latestOrder) {
+      return res
+        .status(404)
+        .json({ message: "No orders found for this salesperson." });
+    }
+
+    // Return the latest order found
+    return res.status(200).json(latestOrder);
+  } catch (error) {
+    // Handle errors and send response
+    console.error(error);
+    return res.status(500).json({ message: "Server error, please try again." });
   }
 };
