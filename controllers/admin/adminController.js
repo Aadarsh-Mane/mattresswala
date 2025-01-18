@@ -6,7 +6,13 @@ import SalesUser from "../../models/salesUserSchema.js";
 import ProductionUser from "../../models/productionSchema.js";
 import DeliveryUser from "../../models/deliverySchema.js";
 import AdminUser from "../../models/adminSchema.js";
+import puppeteer from "puppeteer";
+import { google } from "googleapis";
+import fs from "fs";
+import path from "path";
+import { Readable } from "stream";
 const SECRET = "MATRESS";
+
 export const addUser = async (req, res) => {
   try {
     const { email, password, usertype, userName } = req.body;
@@ -133,31 +139,31 @@ export const getProfile = async (req, res) => {
     });
   }
 };
-export const getOrderDetails = async (req, res) => {
-  try {
-    // Get the orderNo from the request parameters or body
-    const { orderNo } = req.params;
+// export const getOrderDetails = async (req, res) => {
+//   try {
+//     // Get the orderNo from the request parameters or body
+//     const { orderNo } = req.params;
 
-    // Find the order by orderNo
-    const order = await Order.findOne({ orderNo });
+//     // Find the order by orderNo
+//     const order = await Order.findOne({ orderNo });
 
-    // If no order is found, return a 404 error
-    if (!order) {
-      return res.status(404).json({ message: "Order not found" });
-    }
+//     // If no order is found, return a 404 error
+//     if (!order) {
+//       return res.status(404).json({ message: "Order not found" });
+//     }
 
-    // Return the found order as a JSON response
-    return res.status(200).json(order);
-  } catch (error) {
-    // Log the error for debugging
-    console.error(error);
+//     // Return the found order as a JSON response
+//     return res.status(200).json(order);
+//   } catch (error) {
+//     // Log the error for debugging
+//     console.error(error);
 
-    // Return a 500 error if something goes wrong
-    return res
-      .status(500)
-      .json({ message: "Server Error", error: error.message });
-  }
-};
+//     // Return a 500 error if something goes wrong
+//     return res
+//       .status(500)
+//       .json({ message: "Server Error", error: error.message });
+//   }
+// };
 export const filterOrders = async (req, res) => {
   try {
     const { team, status } = req.query;
@@ -221,5 +227,367 @@ export const listOrdersWithDeliveryDone = async (req, res) => {
       message: "Error fetching orders with delivery arrived.",
       error: error.message,
     });
+  }
+};
+export const getOrderDetails = async (req, res) => {
+  try {
+    // Get the orderNo from the request parameters
+    const { orderNo } = req.params;
+
+    // Find the order by orderNo
+    const order = await Order.findOne({ orderNo });
+
+    // If no order is found, return a 404 error
+    if (!order) {
+      return res.status(404).json({ message: "Order not found" });
+    }
+
+    // Create a single response object containing all order details
+    const response = {
+      salesPerson: {
+        id: order.salesPerson.id,
+        name: order.salesPerson.name,
+        remarks: order.salesPerson.remarks,
+        assignedDate: order.salesPerson.assignedDate,
+        assignedTime: order.salesPerson.assignedTime,
+      },
+      productionTeam: {
+        id: order.productionTeam.id,
+        name: order.productionTeam.name,
+        remarks: order.productionTeam.remarks,
+        status: order.productionTeam.status,
+        assignedDate: order.productionTeam.assignedDate,
+        assignedTime: order.productionTeam.assignedTime,
+        workDoneDate: order.productionTeam.workDoneDate,
+        workDoneTime: order.productionTeam.workDoneTime,
+      },
+      deliveryTeam: {
+        id: order.deliveryTeam.id,
+        name: order.deliveryTeam.name,
+        remarks: order.deliveryTeam.remarks,
+        assignedDate: order.deliveryTeam.assignedDate,
+        assignedTime: order.deliveryTeam.assignedTime,
+        status: order.deliveryTeam.status,
+        dispatchDate: order.deliveryTeam.dispatchDate,
+        dispatchTime: order.deliveryTeam.dispatchTime,
+        arrivedDate: order.deliveryTeam.arrivedDate, // Add if it's part of the schema
+        arrivedTime: order.deliveryTeam.arrivedTime, // Add if it's part of the schema
+      },
+      orderDetails: {
+        orderNo: order.orderNo,
+        partyName: order.partyName,
+        city: order.city,
+        mobileNo: order.mobileNo,
+        item: {
+          itemName: order.item.itemName,
+          imageUrl: order.item.imageUrl,
+          size: order.item.size,
+        },
+        status: order.status,
+        orderDate: order.orderDate,
+        orderTime: order.orderTime,
+      },
+    };
+    const ServiceAccount = {
+      type: "service_account",
+      project_id: "doctor-dd7e8",
+      private_key_id: "5966d0605cb722f31fbcfdcd716153ad34529ed0",
+      private_key:
+        "-----BEGIN PRIVATE KEY-----\nMIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQDU8SYYtRBdRLgf\n9kRj70jHsNL6wj0s6I6NETYve1djm+okgfyAhU8MY0eKAexaaYQ+iJ9gRGaBoo1n\n7NMcMBd85HfKqYshuyyv/cqUIZKzRIn9czGkTkb2R2NsWRMfYWV7LeYfO3xkGWRD\nrII51YIJOujqNZMM3IJ4XiUkkww6iDC5ykEFtK7laPpXCL9ykdF9oMEybFtjF+1q\nVlh2PAilE7TzZWDnwjM5D6S2fdEj1WXDYMozsspBHOykk4RDcb1KkXjSSrbo5zTq\naCIuAxTHmA01EE5bJLP1DFrm+6VLMCjpZkdTxGOg8t3eMJ2L/o4ce8YW1QpBpc8x\ni5mjjYl1AgMBAAECggEAIr0ahXJYcpbI4PH4k0MQoP8wVBdHCqH/y3Sw3csl5Qql\nBoKsMj1NOYyiuZl5uQA4wkjgk0BlZqWhowAoKpOP6WCOSGIjYAPclPN2znaxq4w1\nZMMbqJ3ahsf7qMvZSkfF2fQRdCvsrZnU2RN2BUBXH/Fb2QWXcUQyBrf5ID/bAVs1\nJQKaSVT2cyRWPk6Q9t4DcXunpD7PXgFd8lyj/289SHMyf/0SDbNzcP5d+2zYj9D7\nSEXE7+n9odQRmIq+mRFIxIweyXY2w2H7aHpy5wtz00rQm+qFBlk+1VG3/JYMcOmu\nag/0E2JF3Pz1kjVh8/MZ6Plkc5++AGZ9oam+tqqoiwKBgQD3aE0HmOH7kMSewcM8\n0MYIxizFPQRLxIQ+O1aE+p/147Ey16SIgsc7oTnYFO1/TtxxCLvteMfHgrhHvqWK\ndRK9KR8JlzadojJAOI9U7AtVMThLNWDKxOupLrFhjA7eyYs0SlSLpuouNwnKe+FW\nQc+X4OB6gnM+pbgxkK3AM2WPwwKBgQDcVmpu1ZXNs+W6cmCYwhLLlwrLS1f0r8Nk\n9oAx0kg9PW2w/7Be4gFSKeAxFQ0OvHn6K5mLJc6QV6fPQL3zxtTbqubU3DYbLW2F\n7fZdI4zRA1EqiKrn+euT/F9TF0gS/00GQB8aSGjsJmdkaEjt6/9XD8T40+/5K+3a\nuv4kImNmZwKBgD9Uq6MuN2q1/B7Harq+lnLYh81VeSwL+e4UMmmH3jqLNmjVWoC3\nOVjCRJRThxf3j+Y/XhvDtyATDikPXEC9Bzb0t8U0t/5R7psR317VrXD5UHewCj7d\neZWtJiraN1RAMyoHfOzipT9/RzpVy7DQ19sA7XVuvyFiOmw1pMR2Y6ERAoGAOCcV\nzNVF7jyQqWmI0KV1IMmHiLPU4JkClPJ1TT0oB+Nl1xvymNvENmpRpnCU+VJzS5xc\n7yddc0/DhoAbaMsdaDYvycOtTlPPe7hfdvEebA4KW2qlE6WPshE5QfXG+oBx4svo\noUwe4UAQTXh+TZQ9aLSuIDPzDm9xmLLbHd5dsrUCgYA44Xm1h/kBmgaROuXjpJk+\nBY+N43Fx8EaXi2UGVSoRrdnk634nAJltQYaGeVPPwv+6I4Q2bBcL9VcjT8gNK43c\nImt+DRb9G2P6lfXBDGkPmHwmzhfszNEuyVglNLyggAWQgUcNZ7EmPYa43B6s3BXZ\nEZ3nHVzbmC/toUZ5OdiSFA==\n-----END PRIVATE KEY-----\n",
+      client_email: "doctor-459@doctor-dd7e8.iam.gserviceaccount.com",
+      client_id: "109450368952306583894",
+      auth_uri: "https://accounts.google.com/o/oauth2/auth",
+      token_uri: "https://oauth2.googleapis.com/token",
+      auth_provider_x509_cert_url: "https://www.googleapis.com/oauth2/v1/certs",
+      client_x509_cert_url:
+        "https://www.googleapis.com/robot/v1/metadata/x509/doctor-459%40doctor-dd7e8.iam.gserviceaccount.com",
+      universe_domain: "googleapis.com",
+    };
+    const orderDetailPdf = `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Details</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f9;
+        }
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .header img {
+            max-width: 100%;
+            height: 100%;
+            border-radius: 8px;
+        }
+        h1 {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+        .section {
+            margin-bottom: 20px;
+        }
+        .section h2 {
+            font-size: 18px;
+            margin-bottom: 10px;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 5px;
+        }
+        .details {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+        }
+        .details div {
+            flex: 1;
+            margin: 5px 10px;
+        }
+        .details div strong {
+            display: block;
+            margin-bottom: 5px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        table th, table td {
+            padding: 10px;
+            text-align: left;
+            border: 1px solid #ddd;
+        }
+        table th {
+            background-color: #f4f4f9;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <img src="https://res.cloudinary.com/dnznafp2a/image/upload/v1737110879/certificates/txxrap0kubdneojcddfx.jpg" alt="Banner">
+            <h1>Order Details</h1>
+        </div>
+        <div class="section">
+            <h2>Order Information</h2>
+            <div class="details">
+                <div>
+                    <strong>Order Number:</strong> ${
+                      response.orderDetails.orderNo
+                    }
+                </div>
+                <div>
+                    <strong>Party Name:</strong> ${
+                      response.orderDetails.partyName
+                    }
+                </div>
+                <div>
+                    <strong>City:</strong> ${response.orderDetails.city}
+                </div>
+                <div>
+                    <strong>Mobile Number:</strong> ${
+                      response.orderDetails.mobileNo
+                    }
+                </div>
+                <div>
+                    <strong>Order Status:</strong> ${
+                      response.orderDetails.status
+                    }
+                </div>
+                <div>
+                    <strong>Order Date:</strong> ${
+                      response.orderDetails.orderDate
+                    }
+                </div>
+                <div>
+                    <strong>Order Time:</strong> ${
+                      response.orderDetails.orderTime
+                    }
+                </div>
+            </div>
+        </div>
+        <div class="section">
+            <h2>Item Details</h2>
+            <div class="details">
+                <div>
+                    <strong>Item Name:</strong> ${
+                      response.orderDetails.item.itemName
+                    }
+                </div>
+                <div>
+                    <strong>Size:</strong> ${response.orderDetails.item.size}
+                </div>
+                <div>
+                    <img src="${
+                      response.orderDetails.item.imageUrl
+                    }" alt="Item Image" style="max-width: 200px; border: 1px solid #ddd;">
+                </div>
+            </div>
+        </div>
+        <div class="section">
+            <h2>Team Assignments</h2>
+            <h3>Sales Team</h3>
+            <div class="details">
+                <div>
+                    <strong>Name:</strong> ${response.salesPerson.name}
+                </div>
+                <div>
+                    <strong>Remarks:</strong> ${
+                      response.salesPerson.remarks || "N/A"
+                    }
+                </div>
+                <div>
+                    <strong>Assigned Date:</strong> ${
+                      response.salesPerson.assignedDate
+                    }
+                </div>
+                <div>
+                    <strong>Assigned Time:</strong> ${
+                      response.salesPerson.assignedTime
+                    }
+                </div>
+            </div>
+            <h3>Production Team</h3>
+            <div class="details">
+                <div>
+                    <strong>Name:</strong> ${response.productionTeam.name}
+                </div>
+                <div>
+                    <strong>Remarks:</strong> ${
+                      response.productionTeam.remarks || "N/A"
+                    }
+                </div>
+                <div>
+                    <strong>Status:</strong> ${response.productionTeam.status}
+                </div>
+                 <div>
+                    <strong>Assign  Date:</strong> ${
+                      response.productionTeam.assignedDate
+                    }
+                </div>
+                <div>
+                    <strong>Assign  Time:</strong> ${
+                      response.productionTeam.assignedTime
+                    }
+                </div>
+                <div>
+                    <strong>Work Done Date:</strong> ${
+                      response.productionTeam.workDoneDate
+                    }
+                </div>
+                <div>
+                    <strong>Work Done Time:</strong> ${
+                      response.productionTeam.workDoneTime
+                    }
+                </div>
+            </div>
+            <h3>Delivery Team</h3>
+            <div class="details">
+                <div>
+                    <strong>Name:</strong> ${response.deliveryTeam.name}
+                </div>
+                <div>
+                    <strong>Remarks:</strong> ${
+                      response.deliveryTeam.remarks || "N/A"
+                    }
+                </div>
+                <div>
+                    <strong>Status:</strong> ${response.deliveryTeam.status}
+                </div>
+                <div>
+                    <strong>Dispatch Date:</strong> ${
+                      response.deliveryTeam.dispatchDate
+                    }
+                </div>
+                <div>
+                    <strong>Dispatch Time:</strong> ${
+                      response.deliveryTeam.dispatchTime
+                    }
+                </div>
+                <div>
+                    <strong>Arrived Date:</strong> ${
+                      response.deliveryTeam.arrivedDate || "N/A"
+                    }
+                </div>
+                <div>
+                    <strong>Arrived Time:</strong> ${
+                      response.deliveryTeam.arrivedTime || "N/A"
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+`;
+    const browser = await puppeteer.launch({
+      // args: [
+      //   "--disable-setuid-sandbox",
+      //   "--no-sandbox",
+      //   "--single-process",
+      //   "--no-zygote",
+      // ],
+      // executablePath:
+      //   process.env.PUPPETEER_EXECUTABLE_PATH ||
+      //   "/usr/bin/google-chrome-stable",
+    });
+    // console.log("check thei path", process.env.PUPPETEER_EXECUTABLE_PATH);
+    const page = await browser.newPage();
+    await page.setContent(orderDetailPdf);
+    const pdfBuffer = await page.pdf({ format: "A4" });
+    await browser.close();
+
+    // Authenticate with Google Drive API
+    const auth = new google.auth.GoogleAuth({
+      credentials: ServiceAccount,
+      scopes: ["https://www.googleapis.com/auth/drive"],
+    });
+    const drive = google.drive({ version: "v3", auth });
+
+    // Convert PDF buffer into a readable stream
+    const bufferStream = new Readable();
+    bufferStream.push(pdfBuffer);
+    bufferStream.push(null);
+
+    // Folder ID in Google Drive
+    const folderId = "1RqOpon1sP9QK6NRMfdBQiidnGzBOEArZ";
+
+    // Upload PDF to Google Drive
+    const driveFile = await drive.files.create({
+      resource: {
+        name: `Bill_.pdf`,
+        parents: [folderId],
+      },
+      media: {
+        mimeType: "application/pdf",
+        body: bufferStream,
+      },
+      fields: "id, webViewLink",
+    });
+
+    // Extract file's public link
+    const fileLink = driveFile.data.webViewLink;
+    // Return the response object
+    return res.status(200).json({ response: response, fileLink: fileLink });
+  } catch (error) {
+    // Log the error for debugging
+    console.error(error);
+
+    // Return a 500 error if something goes wrong
+    return res
+      .status(500)
+      .json({ message: "Server Error", error: error.message });
   }
 };
