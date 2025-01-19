@@ -98,3 +98,57 @@ export const getCreatedOrders = async (req, res) => {
     return res.status(500).json({ message: "Server error, please try again." });
   }
 };
+export const getOrdersByProductionId = async (req, res) => {
+  try {
+    // Extract production team ID from request parameters
+    const productionId = req.userId;
+    // Find orders where productionTeam.id matches and status is "Started"
+    const orders = await Order.find({
+      "productionTeam.id": productionId,
+      "productionTeam.status": "Started",
+    });
+
+    // Check if no orders were found
+    if (!orders || orders.length === 0) {
+      return res.status(404).json({
+        message: "No orders found for production team with 'Started' status.",
+      });
+    }
+
+    // Respond with the found orders
+    return res.status(200).json(orders);
+  } catch (error) {
+    console.error("Error fetching orders:", error);
+    return res
+      .status(500)
+      .json({ message: "Server error, please try again later." });
+  }
+};
+export const getLatestStartedOrders = async (req, res) => {
+  try {
+    // Extract userId (salesperson's ID) from the request parameters
+    // const { userId } = req.params;
+    const productionId = req.userId;
+
+    // Find the latest order created by the salesperson
+    const latestOrder = await Order.findOne({
+      "productionTeam.id": productionId, // Match the salesperson's ID
+      "productionTeam.status": "Started", // Match the production status as "Started"
+    })
+      .sort({ orderDate: -1, orderTime: -1 }) // Sort by order date and time in descending order
+      .limit(1); // Only get the most recent order
+
+    if (!latestOrder) {
+      return res
+        .status(404)
+        .json({ message: "No orders found for this salesperson." });
+    }
+
+    // Return the latest order found
+    return res.status(200).json(latestOrder);
+  } catch (error) {
+    // Handle errors and send response
+    console.error(error);
+    return res.status(500).json({ message: "Server error, please try again." });
+  }
+};

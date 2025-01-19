@@ -3,6 +3,8 @@ import upload from "../middleware/multer.js";
 import { auth } from "../middleware/auth.js";
 import {
   getCreatedOrders,
+  getLatestStartedOrders,
+  getOrdersByProductionId,
   updateProductionStatus,
 } from "../controllers/production/updateOrder.js";
 const productionRouter = express.Router();
@@ -20,6 +22,19 @@ productionRouter.get(
   auth, // Allow up to 20 files
 
   getCreatedOrders
+);
+productionRouter.get(
+  "/started-orders",
+  auth, // Allow up to 20 files
+
+  getOrdersByProductionId
+);
+
+productionRouter.get(
+  "/latest-started-orders",
+  auth, // Allow up to 20 files
+
+  getLatestStartedOrders
 );
 
 export default productionRouter;
