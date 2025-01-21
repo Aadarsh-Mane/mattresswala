@@ -534,7 +534,7 @@ export const getOrderDetails = async (req, res) => {
     // Upload PDF to Google Drive
     const driveFile = await drive.files.create({
       resource: {
-        name: `Bill_.pdf`,
+        name: `History_.pdf`,
         parents: [folderId],
       },
       media: {
