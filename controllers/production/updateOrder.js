@@ -137,21 +137,38 @@ export const getLatestStartedOrders = async (req, res) => {
     const productionId = req.userId;
 
     // Find the latest order created by the salesperson
-    const latestOrder = await Order.findOne({
-      "productionTeam.id": productionId, // Match the salesperson's ID
-      "productionTeam.status": "Started", // Match the production status as "Started"
-    })
-      .sort({ orderDate: -1, orderTime: -1 }) // Sort by order date and time in descending order
-      .limit(1); // Only get the most recent order
-
-    if (!latestOrder) {
+    // const latestOrder = await Order.findOne({
+    //   "productionTeam.id": productionId, // Match the salesperson's ID
+    //   "productionTeam.status": "Started", // Match the production status as "Started"
+    // })
+    //   .sort({ orderDate: -1, orderTime: -1 }) // Sort by order date and time in descending order
+    //   .limit(1); // Only get the most recent order
+    const orders = await Order.aggregate([
+      {
+        $match: { "productionTeam.status": "Started" },
+      },
+      {
+        $addFields: {
+          combinedDateTime: {
+            $concat: ["$orderDate", " ", "$orderTime"],
+          },
+        },
+      },
+      {
+        $sort: { combinedDateTime: -1 }, // Sort by the combined datetime string in descending order
+      },
+      {
+        $limit: 1, // Only get the most recent order
+      },
+    ]);
+    if (!orders || orders.length === 0) {
       return res
         .status(404)
         .json({ message: "No orders found for this salesperson." });
     }
 
     // Return the latest order found
-    return res.status(200).json(latestOrder);
+    return res.status(200).json(orders[0]);
   } catch (error) {
     // Handle errors and send response
     console.error(error);
