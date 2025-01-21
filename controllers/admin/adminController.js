@@ -502,15 +502,13 @@ export const getOrderDetails = async (req, res) => {
 </html>
 `;
     const browser = await puppeteer.launch({
-      // args: [
-      //   "--disable-setuid-sandbox",
-      //   "--no-sandbox",
-      //   "--single-process",
-      //   "--no-zygote",
-      // ],
-      // executablePath:
-      //   process.env.PUPPETEER_EXECUTABLE_PATH ||
-      //   "/usr/bin/google-chrome-stable",
+      args: [
+        "--disable-setuid-sandbox",
+        "--no-sandbox",
+        "--single-process",
+        "--no-zygote",
+      ],
+      executablePath: "/usr/bin/google-chrome-stable",
     });
     // console.log("check thei path", process.env.PUPPETEER_EXECUTABLE_PATH);
     const page = await browser.newPage();
