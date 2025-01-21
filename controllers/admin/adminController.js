@@ -303,7 +303,7 @@ export const getOrderDetails = async (req, res) => {
         "https://www.googleapis.com/robot/v1/metadata/x509/doctor-459%40doctor-dd7e8.iam.gserviceaccount.com",
       universe_domain: "googleapis.com",
     };
-    const orderDetailPdf = `<!DOCTYPE html>
+    const OrdeDetail = ` <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -311,66 +311,78 @@ export const getOrderDetails = async (req, res) => {
     <title>Order Details</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Arial', sans-serif;
             margin: 0;
             padding: 0;
-            background-color: #f4f4f9;
+            background-color: #f9fafc;
+            color: #333;
         }
         .container {
-            max-width: 800px;
+            max-width: 840px;
             margin: 20px auto;
             background: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
         }
         .header {
             text-align: center;
             margin-bottom: 20px;
         }
         .header img {
-            max-width: 100%;
-            height: 100%;
+            max-width: 30%;
+            height: 10%;
             border-radius: 8px;
+            margin-bottom: 15px;
         }
-        h1 {
-            font-size: 24px;
-            margin-bottom: 10px;
+        .header h1 {
+            font-size: 23px;
+            color: #555;
+            margin: 0;
         }
-        .section {
-            margin-bottom: 20px;
-        }
-        .section h2 {
-            font-size: 18px;
-            margin-bottom: 10px;
-            border-bottom: 1px solid #ddd;
-            padding-bottom: 5px;
+        h2 {
+            font-size: 16px;
+            color: #444;
+            margin-bottom: 13px;
+            border-bottom: 2px solid #f4f4f4;
+            padding-bottom: 3px;
         }
         .details {
             display: flex;
             flex-wrap: wrap;
-            justify-content: space-between;
+            gap: 18px;
+            margin-bottom: 20px;
         }
         .details div {
             flex: 1;
-            margin: 5px 10px;
+            min-width: 200px;
+            font-size: 12px;
         }
         .details div strong {
             display: block;
+            font-weight: bold;
             margin-bottom: 5px;
+            color: #555;
         }
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 10px;
         }
         table th, table td {
-            padding: 10px;
+            padding: 12px 14px;
             text-align: left;
             border: 1px solid #ddd;
+            font-size: 12px;
         }
         table th {
-            background-color: #f4f4f9;
+            background-color: #f8f8f8;
+            font-weight: bold;
+        }
+        img.item-image {
+            max-width: 180px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            margin-top: 8px;
         }
     </style>
 </head>
@@ -380,152 +392,109 @@ export const getOrderDetails = async (req, res) => {
             <img src="https://res.cloudinary.com/dnznafp2a/image/upload/v1737110879/certificates/txxrap0kubdneojcddfx.jpg" alt="Banner">
             <h1>Order Details</h1>
         </div>
+
         <div class="section">
             <h2>Order Information</h2>
             <div class="details">
-                <div>
-                    <strong>Order Number:</strong> ${
-                      response.orderDetails.orderNo
-                    }
-                </div>
-                <div>
-                    <strong>Party Name:</strong> ${
-                      response.orderDetails.partyName
-                    }
-                </div>
-                <div>
-                    <strong>City:</strong> ${response.orderDetails.city}
-                </div>
-                <div>
-                    <strong>Mobile Number:</strong> ${
-                      response.orderDetails.mobileNo
-                    }
-                </div>
-                <div>
-                    <strong>Order Status:</strong> ${
-                      response.orderDetails.status
-                    }
-                </div>
-                <div>
-                    <strong>Order Date:</strong> ${
-                      response.orderDetails.orderDate
-                    }
-                </div>
-                <div>
-                    <strong>Order Time:</strong> ${
-                      response.orderDetails.orderTime
-                    }
-                </div>
+                <div><strong>Order Number:</strong> ${
+                  response.orderDetails.orderNo
+                }</div>
+                <div><strong>Party Name:</strong> ${
+                  response.orderDetails.partyName
+                }</div>
+                <div><strong>City:</strong> ${response.orderDetails.city}</div>
+                <div><strong>Mobile Number:</strong> ${
+                  response.orderDetails.mobileNo
+                }</div>
+                <div><strong>Order Status:</strong> ${
+                  response.orderDetails.status
+                }</div>
+                <div><strong>Order Date:</strong> ${
+                  response.orderDetails.orderDate
+                }</div>
+                <div><strong>Order Time:</strong> ${
+                  response.orderDetails.orderTime
+                }</div>
             </div>
         </div>
+
         <div class="section">
             <h2>Item Details</h2>
             <div class="details">
-                <div>
-                    <strong>Item Name:</strong> ${
-                      response.orderDetails.item.itemName
-                    }
-                </div>
-                <div>
-                    <strong>Size:</strong> ${response.orderDetails.item.size}
-                </div>
-                <div>
-                    <img src="${
-                      response.orderDetails.item.imageUrl
-                    }" alt="Item Image" style="max-width: 200px; border: 1px solid #ddd;">
-                </div>
+                <div><strong>Item Name:</strong> ${
+                  response.orderDetails.item.itemName
+                }</div>
+                <div><strong>Size:</strong> ${
+                  response.orderDetails.item.size
+                }</div>
+                <div><img src="${
+                  response.orderDetails.item.imageUrl
+                }" alt="Item Image" class="item-image"></div>
             </div>
         </div>
+
         <div class="section">
             <h2>Team Assignments</h2>
             <h3>Sales Team</h3>
             <div class="details">
-                <div>
-                    <strong>Name:</strong> ${response.salesPerson.name}
-                </div>
-                <div>
-                    <strong>Remarks:</strong> ${
-                      response.salesPerson.remarks || "N/A"
-                    }
-                </div>
-                <div>
-                    <strong>Assigned Date:</strong> ${
-                      response.salesPerson.assignedDate
-                    }
-                </div>
-                <div>
-                    <strong>Assigned Time:</strong> ${
-                      response.salesPerson.assignedTime
-                    }
-                </div>
+                <div><strong>Name:</strong> ${response.salesPerson.name}</div>
+                <div><strong>Remarks:</strong> ${
+                  response.salesPerson.remarks || "N/A"
+                }</div>
+                <div><strong>Assigned Date:</strong> ${
+                  response.salesPerson.assignedDate
+                }</div>
+                <div><strong>Assigned Time:</strong> ${
+                  response.salesPerson.assignedTime
+                }</div>
             </div>
+
             <h3>Production Team</h3>
             <div class="details">
-                <div>
-                    <strong>Name:</strong> ${response.productionTeam.name}
-                </div>
-                <div>
-                    <strong>Remarks:</strong> ${
-                      response.productionTeam.remarks || "N/A"
-                    }
-                </div>
-                <div>
-                    <strong>Status:</strong> ${response.productionTeam.status}
-                </div>
-                 <div>
-                    <strong>Assign  Date:</strong> ${
-                      response.productionTeam.assignedDate
-                    }
-                </div>
-                <div>
-                    <strong>Assign  Time:</strong> ${
-                      response.productionTeam.assignedTime
-                    }
-                </div>
-                <div>
-                    <strong>Work Done Date:</strong> ${
-                      response.productionTeam.workDoneDate
-                    }
-                </div>
-                <div>
-                    <strong>Work Done Time:</strong> ${
-                      response.productionTeam.workDoneTime
-                    }
-                </div>
+                <div><strong>Name:</strong> ${
+                  response.productionTeam.name
+                }</div>
+                <div><strong>Remarks:</strong> ${
+                  response.productionTeam.remarks || "N/A"
+                }</div>
+                <div><strong>Status:</strong> ${
+                  response.productionTeam.status
+                }</div>
+                <div><strong>Assign Date:</strong> ${
+                  response.productionTeam.assignedDate
+                }</div>
+                <div><strong>Assign Time:</strong> ${
+                  response.productionTeam.assignedTime
+                }</div>
+                <div><strong>Work Done Date:</strong> ${
+                  response.productionTeam.workDoneDate
+                }</div>
+                <div><strong>Work Done Time:</strong> ${
+                  response.productionTeam.workDoneTime
+                }</div>
             </div>
+
             <h3>Delivery Team</h3>
             <div class="details">
-                <div>
-                    <strong>Name:</strong> ${response.deliveryTeam.name}
-                </div>
-                <div>
-                    <strong>Remarks:</strong> ${
-                      response.deliveryTeam.remarks || "N/A"
-                    }
-                </div>
-                <div>
-                    <strong>Status:</strong> ${response.deliveryTeam.status}
-                </div>
-                <div>
-                    <strong>Dispatch Date:</strong> ${
-                      response.deliveryTeam.dispatchDate
-                    }
-                </div>
-                <div>
-                    <strong>Dispatch Time:</strong> ${
-                      response.deliveryTeam.dispatchTime
-                    }
-                </div>
-                <div>
-                    <strong>Arrived Date:</strong> ${
-                      response.deliveryTeam.arrivedDate || "N/A"
-                    }
-                </div>
-                <div>
-                    <strong>Arrived Time:</strong> ${
-                      response.deliveryTeam.arrivedTime || "N/A"
-                    }
-                </div>
+                <div><strong>Name:</strong> ${response.deliveryTeam.name}</div>
+                <div><strong>Remarks:</strong> ${
+                  response.deliveryTeam.remarks || "N/A"
+                }</div>
+                <div><strong>Status:</strong> ${
+                  response.deliveryTeam.status
+                }</div>
+                <div><strong>Dispatch Date:</strong> ${
+                  response.deliveryTeam.dispatchDate
+                }</div>
+                <div><strong>Dispatch Time:</strong> ${
+                  response.deliveryTeam.dispatchTime
+                }</div>
+                <div><strong>Arrived Date:</strong> ${
+                  response.deliveryTeam.arrivedDate || "N/A"
+                }</div>
+                <div><strong>Arrived Time:</strong> ${
+                  response.deliveryTeam.arrivedTime || "N/A"
+                }</div>
             </div>
         </div>
     </div>
@@ -545,7 +514,7 @@ export const getOrderDetails = async (req, res) => {
     });
     // console.log("check thei path", process.env.PUPPETEER_EXECUTABLE_PATH);
     const page = await browser.newPage();
-    await page.setContent(orderDetailPdf);
+    await page.setContent(OrdeDetail);
     const pdfBuffer = await page.pdf({ format: "A4" });
     await browser.close();
 

@@ -127,24 +127,22 @@ export const getOrdersBySalesPerson = async (req, res) => {
 };
 export const getLatestOrderBySalesPerson = async (req, res) => {
   try {
-    // Extract userId (salesperson's ID) from the request parameters
-    // const { userId } = req.params;
-    const salesId = req.userId;
+    const salesId = req.userId; // Assuming req.userId contains the salesPerson ID
 
-    // Find the latest order created by the salesperson
-    const latestOrder = await Order.findOne({
-      "salesPerson.id": salesId, // Match the salesperson's ID
-    })
-      .sort({ orderDate: -1, orderTime: -1 }) // Sort by order date and time in descending order
-      .limit(1); // Only get the most recent order
+    // Fetch all orders for the given salesperson
+    const orders = await Order.find({ "salesPerson.id": salesId });
 
-    if (!latestOrder) {
+    // Check if there are any orders
+    if (!orders.length) {
       return res
         .status(404)
         .json({ message: "No orders found for this salesperson." });
     }
 
-    // Return the latest order found
+    // Get the last order in the array
+    const latestOrder = orders[orders.length - 1];
+
+    // Return the latest order
     return res.status(200).json(latestOrder);
   } catch (error) {
     // Handle errors and send response
@@ -152,6 +150,7 @@ export const getLatestOrderBySalesPerson = async (req, res) => {
     return res.status(500).json({ message: "Server error, please try again." });
   }
 };
+
 // export const getLatestOrdeWorkingPerson = async (req, res) => {
 //   try {
 //     // Extract userId (salesperson's ID) from the request parameters

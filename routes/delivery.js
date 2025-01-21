@@ -1,6 +1,7 @@
 import express from "express";
 import { auth } from "../middleware/auth.js";
 import {
+  getProductionDone,
   listOrdersWithProductionDone,
   updateDeliveryStatus,
 } from "../controllers/delievery/delivery.js";
@@ -17,6 +18,12 @@ deliveryRouter.get(
   auth, // Allow up to 20 files
 
   listOrdersWithProductionDone
+);
+deliveryRouter.get(
+  "/latest-done",
+  auth, // Allow up to 20 files
+
+  getProductionDone
 );
 
 export default deliveryRouter;

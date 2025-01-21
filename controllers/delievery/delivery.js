@@ -17,6 +17,22 @@ export const listOrdersWithProductionDone = async (req, res) => {
     });
   }
 };
+export const getProductionDone = async (req, res) => {
+  try {
+    // Query to find orders with productionTeam.status = 'Done'
+    const orders = await Order.findOne({ "productionTeam.status": "Done" })
+      .sort({ orderDate: -1, orderTime: -1 }) // Sort by order date and time in descending order
+      .limit(1); // Only get the most recent order
+
+    res.status(200).json(orders);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      message: "Error fetching orders with production completed.",
+      error: error.message,
+    });
+  }
+};
 export const updateDeliveryStatus = async (req, res) => {
   try {
     const { orderNo, status, remarks } = req.body;

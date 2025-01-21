@@ -33,7 +33,13 @@ export const updateProductionStatus = async (req, res) => {
             "Another production team member is already working on this order.",
         });
     }
-
+    if (order.deliveryTeam.status === "Arrived") {
+      return res
+        .status(400) // Bad Request
+        .json({
+          message: "Delivery work has already been done for this order.",
+        });
+    }
     // Check if the status is already "Started"
     if (order.productionTeam.status === "Started" && status === "Started") {
       return res
