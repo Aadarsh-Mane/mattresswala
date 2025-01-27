@@ -11,6 +11,8 @@ import { google } from "googleapis";
 import fs from "fs";
 import path from "path";
 import { Readable } from "stream";
+import sizeAndNames from "../../models/numbersSchema.js";
+import sizeAndNamesSchema from "../../models/numbersSchema.js";
 const SECRET = "MATRESS";
 
 export const addUser = async (req, res) => {
@@ -584,6 +586,190 @@ export const deleteOrderByOrderNo = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: "An error occurred while deleting the order",
+      error: error.message,
+    });
+  }
+};
+export const addSize = async (req, res) => {
+  try {
+    const { newSize } = req.body;
+
+    // Find the first document (or you can use a filter condition if needed)
+    const record = await sizeAndNamesSchema.findOne();
+
+    // Check if the new size already exists in the size array
+    if (record.size.includes(newSize)) {
+      return res.status(400).json({ message: "Size already exists." });
+    }
+
+    // Add the new size to the array
+    record.size.push(newSize);
+    await record.save();
+
+    return res
+      .status(200)
+      .json({ message: "Size added successfully.", record });
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
+};
+export const addItemName = async (req, res) => {
+  try {
+    const { newItemName } = req.body;
+
+    // Find the first document (or you can use a filter condition if needed)
+    let record = await sizeAndNamesSchema.findOne();
+
+    // If no document exists, create a new one
+    if (!record) {
+      record = new sizeAndNamesSchema({
+        itemName: [], // Initialize the array
+      });
+    }
+
+    // Check if the new item name already exists in the itemName array
+    if (record.itemName.includes(newItemName)) {
+      return res.status(400).json({ message: "Item name already exists." });
+    }
+
+    // Add the new item name to the array
+    record.itemName.push(newItemName);
+    await record.save();
+
+    return res
+      .status(200)
+      .json({ message: "Item name added successfully.", record });
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
+};
+
+export const deleteSize = async (req, res) => {
+  try {
+    const { sizeToDelete } = req.params; // The size to delete from the array
+
+    // Find the record
+    const record = await sizeAndNamesSchema.findOne();
+
+    // Check if the size exists in the array
+    if (!record.size.includes(sizeToDelete)) {
+      return res.status(400).json({ message: "Size does not exist." });
+    }
+
+    // Remove the size from the array
+    record.size = record.size.filter((size) => size !== sizeToDelete);
+    await record.save();
+
+    return res
+      .status(200)
+      .json({ message: "Size deleted successfully.", record });
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
+};
+export const deleteItemName = async (req, res) => {
+  try {
+    const { itemNameToDelete } = req.body; // The item name to delete from the array
+
+    // Find the record
+    const record = await sizeAndNames.findOne();
+
+    // Check if the item name exists in the array
+    if (!record.itemName.includes(itemNameToDelete)) {
+      return res.status(400).json({ message: "Item name does not exist." });
+    }
+
+    // Remove the item name from the array
+    record.itemName = record.itemName.filter(
+      (itemName) => itemName !== itemNameToDelete
+    );
+    await record.save();
+
+    return res
+      .status(200)
+      .json({ message: "Item name deleted successfully.", record });
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
+};
+export const getSizes = async (req, res) => {
+  try {
+    // const data = await fetchData(); // Call fetchData function
+    const data = await sizeAndNamesSchema.find(); // Fetch all documents
+
+    res.status(200).json(data); // Send the data as a JSON response
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching data", error }); // Handle errors
+  }
+};
+export const getOnlySizes = async (req, res) => {
+  try {
+    // const data = await fetchData(); // Call fetchData function
+    const data = await sizeAndNamesSchema.find({}, "size"); // Fetch 'size' field only
+
+    res.status(200).json(data); // Send the data as a JSON response
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching data", error }); // Handle errors
+  }
+};
+export const getOnlyNames = async (req, res) => {
+  try {
+    // const data = await fetchData(); // Call fetchData function
+    const data = await sizeAndNamesSchema.find({}, "itemName"); // Fetch 'size' field only
+
+    res.status(200).json(data); // Send the data as a JSON response
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching data", error }); // Handle errors
+  }
+};
+const itemNames = [
+  "Mattress",
+  "Curtain",
+  "Mattress cover",
+  "Pillow",
+  "Cushion",
+  "Bolster",
+  "Comforter",
+  "Bedsheets",
+  "Bedsheets with fitted",
+  "Bedsheets set",
+  "Dohar",
+  "Sofa Cover",
+];
+
+const itemSizes = [
+  "72x36x4 Inch",
+  "72x36x6 Inch",
+  "78x72x5 Inch",
+  "78x72x6 Inch",
+  "17x27 Inch",
+  "16x24 Inch",
+  "16x16 Inch",
+  "21x9 Inch",
+  "108x108 Inch",
+  "90x100 Inch",
+];
+
+// Controller to add data to MongoDB
+export const addSizesAndNames = async (req, res) => {
+  try {
+    // Create a new document based on the schema
+    const newSizeAndName = new sizeAndNamesSchema({
+      size: itemSizes,
+      itemName: itemNames,
+    });
+
+    // Save to the database
+    await newSizeAndName.save();
+
+    // Return success message
+    res.status(201).json({
+      message: "Sizes and item names successfully added to the database.",
+    });
+  } catch (error) {
+    console.error("Error adding data: ", error);
+    res.status(500).json({
+      message: "Error adding sizes and item names to the database.",
       error: error.message,
     });
   }
