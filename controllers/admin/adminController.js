@@ -558,3 +558,33 @@ export const getOrderDetails = async (req, res) => {
       .json({ message: "Server Error", error: error.message });
   }
 };
+export const deleteOrderByOrderNo = async (req, res) => {
+  const { orderNo } = req.params; // Get orderNo from URL parameters
+
+  try {
+    // Check if the order exists
+    const order = await Order.findOne({ orderNo });
+
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        message: "Order not found with the provided order number",
+      });
+    }
+
+    // Delete the order
+    await Order.deleteOne({ orderNo });
+
+    return res.status(200).json({
+      success: true,
+      message: "Order deleted successfully",
+    });
+  } catch (error) {
+    console.error("Error deleting the order:", error);
+    return res.status(500).json({
+      success: false,
+      message: "An error occurred while deleting the order",
+      error: error.message,
+    });
+  }
+};
