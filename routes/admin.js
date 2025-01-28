@@ -7,6 +7,7 @@ import {
   deleteItemName,
   deleteOrderByOrderNo,
   deleteSize,
+  deleteUser,
   filterOrders,
   getAllUsers,
   getOnlyNames,
@@ -33,6 +34,7 @@ adminRouter.get("/getSizes", getSizes);
 adminRouter.get("/getOnlySizes", getOnlySizes);
 adminRouter.get("/getOnlyNames", getOnlyNames);
 adminRouter.post("/add1", addSizesAndNames);
+adminRouter.delete("/deleteUser/:id", deleteUser);
 // adminRouter.post("/signin", );
 
 // adminRouter.get("/profile", auth, getUserProfile);
