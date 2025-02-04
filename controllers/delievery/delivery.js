@@ -73,14 +73,15 @@ export const updateDeliveryStatus = async (req, res) => {
     }
 
     // Ensure the user is from the delivery team
-    if (req.userType !== "delivery") {
+    if (req.userType !== "delivery" && req.userType !== "admin") {
       return res
         .status(403)
         .json({ message: "Only delivery team can update the status." });
     }
     if (
       order.deliveryTeam.id &&
-      order.deliveryTeam.id.toString() !== deliveryPersonId
+      order.deliveryTeam.id.toString() !== deliveryPersonId &&
+      req.userType !== "admin"
     ) {
       return res
         .status(409) // Conflict

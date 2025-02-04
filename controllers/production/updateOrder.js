@@ -15,7 +15,7 @@ export const updateProductionStatus = async (req, res) => {
     }
 
     // Ensure the user is from the production team
-    if (req.userType !== "production") {
+    if (req.userType !== "production" && req.userType !== "admin") {
       return res
         .status(403)
         .json({ message: "Only production team can update the status." });
@@ -24,7 +24,8 @@ export const updateProductionStatus = async (req, res) => {
     // Check if another production person is already working on the order
     if (
       order.productionTeam.id &&
-      order.productionTeam.id.toString() !== productionPersonId
+      order.productionTeam.id.toString() !== productionPersonId &&
+      req.userType !== "admin"
     ) {
       return res
         .status(409) // Conflict

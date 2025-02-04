@@ -170,17 +170,16 @@ export const filterOrders = async (req, res) => {
   try {
     const { team, status } = req.query;
 
-    // Validate required parameters
-    if (!team || !status) {
-      return res.status(400).json({
-        message: "Both 'team' and 'status' query parameters are required.",
-      });
+    // If team or status is not provided or equals "All", return all orders.
+    if (!team || !status || team === "All" || status === "All") {
+      const orders = await Order.find({});
+      return res.status(200).json(orders);
     }
 
     // Map team query to the appropriate field in the schema
     const teamFields = {
       productionTeam: "productionTeam.status",
-      salesTeam: "salesPerson.remarks", // Replace with an appropriate field if sales team has a status
+      salesTeam: "salesPerson.remarks", // Replace with the appropriate field if needed
       deliveryTeam: "deliveryTeam.status",
     };
 
@@ -214,6 +213,7 @@ export const filterOrders = async (req, res) => {
     });
   }
 };
+
 export const listOrdersWithDeliveryDone = async (req, res) => {
   try {
     // Query to find orders with productionTeam.status = 'Done'
