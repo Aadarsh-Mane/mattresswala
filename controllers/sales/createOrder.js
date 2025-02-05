@@ -3,6 +3,8 @@ import { google } from "googleapis";
 import fs from "fs";
 import path from "path";
 import Order from "../../models/orderSchema.js";
+import cloudinary from "../../helpers/cloudinary.js";
+
 const ServiceAccount = {
   type: "service_account",
   project_id: "doctor-dd7e8",
@@ -44,29 +46,21 @@ export const createOrder = async (req, res) => {
 
     // Upload image to Google Drive if available
     if (itemImage) {
-      const file = itemImage;
-
       const bufferStream = new Readable();
-      bufferStream.push(file.buffer);
+      bufferStream.push(itemImage.buffer);
       bufferStream.push(null);
 
-      const fileMetadata = {
-        name: file.originalname,
-        parents: ["1RqOpon1sP9QK6NRMfdBQiidnGzBOEArZ"], // Your shared folder ID
-      };
-
-      const media = {
-        mimeType: file.mimetype,
-        body: bufferStream,
-      };
-
-      const uploadResponse = await drive.files.create({
-        resource: fileMetadata,
-        media: media,
-        fields: "id, webViewLink",
+      // Upload to Cloudinary
+      imageUrl = await new Promise((resolve, reject) => {
+        const uploadStream = cloudinary.v2.uploader.upload_stream(
+          { folder: "orders" }, // Optional folder name in Cloudinary
+          (error, result) => {
+            if (error) reject(error);
+            else resolve(result.secure_url);
+          }
+        );
+        bufferStream.pipe(uploadStream);
       });
-
-      imageUrl = uploadResponse.data.webViewLink; // The link to the uploaded image
     }
 
     // Process the item and add the image URL

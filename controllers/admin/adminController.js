@@ -429,9 +429,8 @@ export const getOrderDetails = async (req, res) => {
                 <div><strong>Size:</strong> ${
                   response.orderDetails.item.size
                 }</div>
-                <div><img src="${
-                  response.orderDetails.item.imageUrl
-                }" alt="Item Image" class="item-image"></div>
+                <div><img src="
+                " alt="Item Image" class="item-image"></div>
             </div>
         </div>
 
