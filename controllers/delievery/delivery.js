@@ -81,7 +81,8 @@ export const updateDeliveryStatus = async (req, res) => {
     if (
       order.deliveryTeam.id &&
       order.deliveryTeam.id.toString() !== deliveryPersonId &&
-      req.userType !== "admin"
+      req.userType !== "admin" &&
+      req.userType !== "delivery"
     ) {
       return res
         .status(409) // Conflict

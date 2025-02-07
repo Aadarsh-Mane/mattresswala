@@ -25,7 +25,8 @@ export const updateProductionStatus = async (req, res) => {
     if (
       order.productionTeam.id &&
       order.productionTeam.id.toString() !== productionPersonId &&
-      req.userType !== "admin"
+      req.userType !== "admin" &&
+      req.userType !== "production"
     ) {
       return res
         .status(409) // Conflict
