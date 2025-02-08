@@ -128,6 +128,10 @@ const orderSchema = new mongoose.Schema({
       default: null, // Initially not assigned
     },
   },
+  serialNumber: {
+    type: Number,
+    unique: true, // Ensures uniqueness
+  },
   orderNo: {
     type: String,
     required: true,

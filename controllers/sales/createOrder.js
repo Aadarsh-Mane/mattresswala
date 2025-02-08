@@ -5,6 +5,7 @@ import path from "path";
 import Order from "../../models/orderSchema.js";
 import cloudinary from "../../helpers/cloudinary.js";
 import allUsersSchema from "../../models/allUsersSchema.js";
+import Counter from "../../models/trackSchema.js";
 
 const ServiceAccount = {
   type: "service_account",
@@ -41,6 +42,13 @@ export const createOrder = async (req, res) => {
 
     const randomSixDigit = Math.floor(100000 + Math.random() * 900000);
     const orderNo = `ORD-${randomSixDigit}`;
+    let serialNumber;
+    const counter = await Counter.findOneAndUpdate(
+      { name: "orderSerial" },
+      { $inc: { value: 1 } },
+      { new: true, upsert: true }
+    );
+    serialNumber = counter.value; // Get incremented serial number
 
     const itemImage = req.file; // Use req.file when using upload.single()
     let imageUrl = "";
@@ -77,6 +85,8 @@ export const createOrder = async (req, res) => {
     };
     console.log(formattedItem);
     const newOrder = new Order({
+      serialNumber, // Assign the incremented serial number
+
       salesPerson: {
         id: salesPersonId,
         name: salesPersonName,
