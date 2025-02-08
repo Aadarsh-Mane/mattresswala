@@ -4,7 +4,6 @@ import fs from "fs";
 import path from "path";
 import Order from "../../models/orderSchema.js";
 import cloudinary from "../../helpers/cloudinary.js";
-import { sendNotification } from "../admin/myNotification.js";
 import allUsersSchema from "../../models/allUsersSchema.js";
 
 const ServiceAccount = {
