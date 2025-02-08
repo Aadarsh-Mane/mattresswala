@@ -8,6 +8,7 @@ const allUsers = new mongoose.Schema({
   imageUrl: {
     type: String,
   },
+  fcmToken: { type: String }, // Store the FCM token here
   createdAt: { type: Date, default: Date.now },
 });
 

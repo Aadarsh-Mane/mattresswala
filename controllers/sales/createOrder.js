@@ -4,6 +4,8 @@ import fs from "fs";
 import path from "path";
 import Order from "../../models/orderSchema.js";
 import cloudinary from "../../helpers/cloudinary.js";
+import { sendNotification } from "../admin/myNotification.js";
+import allUsersSchema from "../../models/allUsersSchema.js";
 
 const ServiceAccount = {
   type: "service_account",
@@ -68,7 +70,13 @@ export const createOrder = async (req, res) => {
       ...JSON.parse(item), // Assuming 'item' is a JSON string
       imageUrl, // Add the image URL to the item
     };
-
+    const formattedItem = {
+      itemName: processedItem.itemName.replace(/\(\d+\)/g, "").trim(), // Remove bracket numbers
+      size: processedItem.size,
+      quantity: processedItem.quantity,
+      imageUrl, // Attach image URL if uploaded
+    };
+    console.log(formattedItem);
     const newOrder = new Order({
       salesPerson: {
         id: salesPersonId,
@@ -79,11 +87,16 @@ export const createOrder = async (req, res) => {
       partyName,
       city,
       mobileNo,
-      item: processedItem, // Directly set the item object (no need to use array)
+      item: formattedItem, // Directly set the item object (no need to use array)
     });
 
     await newOrder.save();
+    const users = await allUsersSchema.find({ fcmToken: { $ne: null } });
 
+    // Loop through the users and send a notification to each FCM token
+    // users.forEach((user) => {
+    //   sendNotification(user.fcmToken);
+    // });
     res.status(201).json({
       message: "Order created successfully with an item.",
       order: newOrder,

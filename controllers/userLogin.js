@@ -8,8 +8,8 @@ import AdminUser from "../models/adminSchema.js";
 const SECRET = "MATRESS";
 export const loginUser = async (req, res) => {
   try {
-    const { email, password } = req.body;
-
+    const { email, password, fcmtoken } = req.body;
+    console.log(email, password, fcmtoken);
     if (!email || !password) {
       return res
         .status(400)
@@ -17,6 +17,8 @@ export const loginUser = async (req, res) => {
     }
 
     const user = await allUsersSchema.findOne({ email });
+    user.fcmToken = fcmtoken;
+    await user.save();
 
     if (!user) {
       return res.status(404).json({ message: "User not found." });
@@ -36,17 +38,23 @@ export const loginUser = async (req, res) => {
       usertype: user.usertype,
       userName: user.userName,
       imageUrl: user.imageUrl,
+      fcmToken: fcmtoken,
       createdAt: user.createdAt,
     };
 
     if (user.usertype === "sales") {
       userToInsert = await SalesUser.findOne({ email });
+      if (userToInsert) {
+        userToInsert.fcmToken = fcmtoken;
+        await userToInsert.save();
+      }
       if (!userToInsert) {
         userToInsert = new SalesUser(userData);
         await userToInsert.save();
       }
     } else if (user.usertype === "production") {
       userToInsert = await ProductionUser.findOne({ email });
+
       if (!userToInsert) {
         userToInsert = new ProductionUser(userData);
         await userToInsert.save();

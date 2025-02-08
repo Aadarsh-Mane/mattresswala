@@ -5,20 +5,6 @@ const itemSchema = new mongoose.Schema({
   itemName: {
     type: String,
     required: true,
-    // enum: [
-    //   "Mattress",
-    //   "Curtain",
-    //   "Mattress cover",
-    //   "Pillow",
-    //   "Cushion",
-    //   "Bolster",
-    //   "Comforter",
-    //   "Bedsheets",
-    //   "Bedsheets with fitted",
-    //   "Bedsheets set",
-    //   "Dohar",
-    //   "Sofa Cover",
-    // ],
   },
 
   imageUrl: {
@@ -28,18 +14,10 @@ const itemSchema = new mongoose.Schema({
   size: {
     type: String,
     required: true,
-    // enum: [
-    //   "72x36x4 Inch",
-    //   "72x36x6 Inch",
-    //   "78x72x5 Inch",
-    //   "78x72x6 Inch",
-    //   "17x27 Inch",
-    //   "16x24 Inch",
-    //   "16x16 Inch",
-    //   "21x9 Inch",
-    //   "108x108 Inch",
-    //   "90x100 Inch",
-    // ],
+  },
+  quantity: {
+    type: String,
+    required: true,
   },
 });
 

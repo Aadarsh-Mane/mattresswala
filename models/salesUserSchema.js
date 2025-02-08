@@ -6,6 +6,8 @@ const salesUserSchema = new mongoose.Schema({
   usertype: { type: String, required: true, default: "sales" },
   userName: { type: String, required: true },
   imageUrl: { type: String },
+  fcmToken: { type: String }, // Store the FCM token here
+
   createdAt: { type: Date, default: Date.now },
 });
 

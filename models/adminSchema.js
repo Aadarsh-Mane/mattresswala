@@ -6,6 +6,8 @@ const adminSchema = new mongoose.Schema({
   usertype: { type: String, required: true, default: "admin" },
   userName: { type: String, required: true },
   imageUrl: { type: String },
+  fcmToken: { type: String }, // Store the FCM token here
+
   createdAt: { type: Date, default: Date.now },
 });
 
