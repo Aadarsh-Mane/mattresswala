@@ -96,7 +96,7 @@ export const updateDeliveryStatus = async (req, res) => {
     // Update delivery status and remarks
     order.deliveryTeam.status = status || order.deliveryTeam.status;
     order.deliveryTeam.remarks = remarks || order.deliveryTeam.remarks;
-    order.deliveryTeam.updatedBy = remarks || order.deliveryTeam.updatedBy;
+    order.deliveryTeam.updatedBy = updatedBy || order.deliveryTeam.updatedBy;
     order.deliveryTeam.id = deliveryPersonId;
     order.deliveryTeam.name = deliveryPersonName;
 
