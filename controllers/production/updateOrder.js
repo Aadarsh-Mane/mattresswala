@@ -2,7 +2,7 @@ import Order from "../../models/orderSchema.js";
 import moment from "moment-timezone";
 export const updateProductionStatus = async (req, res) => {
   try {
-    const { orderNo, status, remarks } = req.body;
+    const { orderNo, status, remarks, updatedBy } = req.body;
     const productionPersonId = req.userId;
     const productionPersonName = req.userName;
     console.log(req.body);
@@ -56,6 +56,8 @@ export const updateProductionStatus = async (req, res) => {
     // Update production status and remarks
     order.productionTeam.status = status || order.productionTeam.status;
     order.productionTeam.remarks = remarks || order.productionTeam.remarks;
+    order.productionTeam.updatedBy =
+      updatedBy || order.productionTeam.updatedBy;
     order.productionTeam.id = productionPersonId;
     order.productionTeam.name = productionPersonName;
 

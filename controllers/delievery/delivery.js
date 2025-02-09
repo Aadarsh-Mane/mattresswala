@@ -58,7 +58,7 @@ export const getProductionDone = async (req, res) => {
 
 export const updateDeliveryStatus = async (req, res) => {
   try {
-    const { orderNo, status, remarks } = req.body;
+    const { orderNo, status, remarks, updatedBy } = req.body;
     console.log("Request Body:", req.body);
 
     const deliveryPersonId = req.userId;
@@ -96,6 +96,7 @@ export const updateDeliveryStatus = async (req, res) => {
     // Update delivery status and remarks
     order.deliveryTeam.status = status || order.deliveryTeam.status;
     order.deliveryTeam.remarks = remarks || order.deliveryTeam.remarks;
+    order.deliveryTeam.updatedBy = remarks || order.deliveryTeam.updatedBy;
     order.deliveryTeam.id = deliveryPersonId;
     order.deliveryTeam.name = deliveryPersonName;
 

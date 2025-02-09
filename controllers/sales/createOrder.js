@@ -30,7 +30,7 @@ const drive = google.drive({ version: "v3", auth });
 
 export const createOrder = async (req, res) => {
   try {
-    const { partyName, city, mobileNo, item, remarks } = req.body;
+    const { partyName, city, mobileNo, item, remarks, createdBy } = req.body;
     const salesPersonId = req.userId;
     const salesPersonName = req.userName;
     console.log(req.body);
@@ -91,6 +91,7 @@ export const createOrder = async (req, res) => {
         id: salesPersonId,
         name: salesPersonName,
         remarks: remarks || null,
+        createdBy: createdBy || null,
       },
       orderNo,
       partyName,

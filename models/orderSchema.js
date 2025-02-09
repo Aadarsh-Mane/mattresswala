@@ -36,6 +36,10 @@ const orderSchema = new mongoose.Schema({
       type: String,
       default: null, // Optional field for sales team remarks
     },
+    createdBy: {
+      type: String,
+      default: null, // Optional field for sales team remarks
+    },
     assignedDate: {
       type: String,
       default: () => moment().tz("Asia/Kolkata").format("YYYY-MM-DD"), // Date when assigned
@@ -56,6 +60,10 @@ const orderSchema = new mongoose.Schema({
       default: null, // Name will be set when assigned
     },
     remarks: {
+      type: String,
+      default: null, // Optional field for production team remarks
+    },
+    updatedBy: {
       type: String,
       default: null, // Optional field for production team remarks
     },
@@ -110,6 +118,10 @@ const orderSchema = new mongoose.Schema({
       required: true,
       enum: ["Waiting", "Dispatched", "Arrived"],
       default: "Waiting", // Default status
+    },
+    updatedBy: {
+      type: String,
+      default: null, // Optional field for production team remarks
     },
     dispatchDate: {
       type: String,
