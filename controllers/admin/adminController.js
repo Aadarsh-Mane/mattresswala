@@ -668,7 +668,7 @@ export const deleteSize = async (req, res) => {
 };
 export const deleteItemName = async (req, res) => {
   try {
-    const { itemNameToDelete } = req.body; // The item name to delete from the array
+    const { itemNameToDelete } = req.params; // The item name to delete from the array
 
     // Find the record
     const record = await sizeAndNames.findOne();
