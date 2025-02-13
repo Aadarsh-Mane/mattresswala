@@ -1,4 +1,4 @@
-import serviceAccount from "../../mattress1.json" with { type: "json" };
+import serviceAccount from "../../mattress2.json" with { type: "json" };
 import { google } from "googleapis";
 import express from "express";
 import axios from "axios";
