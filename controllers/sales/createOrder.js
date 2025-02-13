@@ -6,6 +6,7 @@ import Order from "../../models/orderSchema.js";
 import cloudinary from "../../helpers/cloudinary.js";
 import allUsersSchema from "../../models/allUsersSchema.js";
 import Counter from "../../models/trackSchema.js";
+import { sendNotification } from "../admin/myNotification.js";
 
 const ServiceAccount = {
   type: "service_account",
@@ -104,9 +105,9 @@ export const createOrder = async (req, res) => {
     const users = await allUsersSchema.find({ fcmToken: { $ne: null } });
 
     // Loop through the users and send a notification to each FCM token
-    // users.forEach((user) => {
-    //   sendNotification(user.fcmToken);
-    // });
+    users.forEach((user) => {
+      sendNotification(user.fcmToken, partyName);
+    });
     res.status(201).json({
       message: "Order created successfully with an item.",
       order: newOrder,

@@ -1,6 +1,6 @@
 import axios from "axios";
 import cron from "node-cron";
-
+import base64 from "base-64";
 const publicKey = "chpmncre"; // Replace with your public API key
 const privateKey = "ad2a7b58-e207-4ab7-b0fe-f3719bb7f026"; // Replace with your private API key
 const clusterName = "Cluster0"; // Replace with your cluster name
@@ -12,57 +12,34 @@ const auth = {
 };
 
 // Function to pause the cluster
-const pauseCluster = async () => {
-  try {
-    const response = await axios.patch(
-      `https://cloud.mongodb.com/api/atlas/v1.0/groups/${projectId}/clusters/${clusterName}`,
-      {
-        paused: true,
-      },
-      {
-        auth,
-      }
-    );
-    console.log("Cluster paused successfully:", response.data);
-  } catch (error) {
-    console.error("Error pausing cluster:", error);
-  }
+
+const PUBLIC_KEY = "chpmncre";
+const PRIVATE_KEY = "ad2a7b58-e207-4ab7-b0fe-f3719bb7f026";
+const PROJECT_ID = "677e6d2e83f3244a6378ffcc"; // Get from Atlas URL
+const CLUSTER_NAME = "Cluster0"; // Your MongoDB cluster name
+
+const M10_TO_M2_BODY = {
+  providerSettings: {
+    instanceSizeName: "M2", // Change this to scale down
+  },
 };
 
-// Function to resume the cluster
-const resumeCluster = async () => {
+async function scaleDownMongoDB() {
+  const auth = base64.encode(`${PUBLIC_KEY}:${PRIVATE_KEY}`);
+  const url = `https://cloud.mongodb.com/api/atlas/v1.0/groups/${PROJECT_ID}/clusters/${CLUSTER_NAME}`;
+
   try {
-    const response = await axios.patch(
-      `https://cloud.mongodb.com/api/atlas/v1.0/groups/${projectId}/clusters/${clusterName}`,
-      {
-        paused: false,
+    const response = await axios.patch(url, M10_TO_M2_BODY, {
+      headers: {
+        Authorization: `Basic ${auth}`,
+        "Content-Type": "application/json",
       },
-      {
-        auth,
-      }
-    );
-    console.log("Cluster resumed successfully:", response.data);
+    });
+
+    console.log("Cluster scaling initiated:", response.data);
   } catch (error) {
-    console.error("Error resuming cluster:", error);
+    console.log(error);
   }
-};
+}
 
-// Schedule the tasks
-pauseCluster();
-
-// Resume cluster after 2 minutes
-// cron.schedule("*/2 * * * *", () => {
-//   console.log("Resuming cluster after 2 minutes...");
-//   resumeCluster();
-// });
-// Pause the cluster at 7 PM
-// cron.schedule("0 19 * * *", () => {
-//   console.log("Pausing cluster at 7 PM...");
-//   pauseCluster();
-// });
-
-// // Resume the cluster at 10 PM
-// cron.schedule("0 22 * * *", () => {
-//   console.log("Resuming cluster at 10 PM...");
-//   resumeCluster();
-// });
+scaleDownMongoDB(); // Call the function
