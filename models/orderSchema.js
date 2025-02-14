@@ -9,7 +9,7 @@ const itemSchema = new mongoose.Schema({
 
   imageUrl: {
     type: String, // Single string for the image URL
-    required: true, // Image is required
+    // required: true, // Image is required
   },
   size: {
     type: String,
