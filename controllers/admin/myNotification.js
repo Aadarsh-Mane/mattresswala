@@ -58,4 +58,37 @@ export const sendNotification = async (fcmToken,partyName) => {
       );
     }
   };
+  export const orderUpdateNotification = async (fcmToken,updatedBy,partyName) => {
+    console.log("Notification sent successfully:", fcmToken,updatedBy,partyName);
+    const accessToken = await getAccessToken();
   
+    const message = {
+      message: {
+      token: fcmToken, // Dynamically pass the token
+      notification: {
+        title: "Production Order Update",
+        body: `The order has been updated by ${updatedBy} for party ${partyName}. Check it out!`,
+      },
+      },
+    };
+  
+    try {
+      const response = await axios.post(
+        `https://fcm.googleapis.com/v1/projects/mattresswala-2da5e/messages:send`,
+        message,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+  
+      console.log("Notification sent successfully:", response.data);
+    } catch (error) {
+      console.error(
+        "Error sending notification:",
+        error.response ? error.response.data : error.message
+      );
+    }
+  }

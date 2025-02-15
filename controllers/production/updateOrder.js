@@ -1,5 +1,11 @@
 import Order from "../../models/orderSchema.js";
 import moment from "moment-timezone";
+import {
+  orderUpdateNotification,
+  sendNotification,
+} from "../admin/myNotification.js";
+import ProductionUser from "../../models/productionSchema.js";
+import allUsersSchema from "../../models/allUsersSchema.js";
 export const updateProductionStatus = async (req, res) => {
   try {
     const { orderNo, status, remarks, updatedBy } = req.body;
@@ -71,10 +77,14 @@ export const updateProductionStatus = async (req, res) => {
       order.productionTeam.workDoneDate = now.format("YYYY-MM-DD");
       order.productionTeam.workDoneTime = now.format("hh:mm A");
     }
+    // const production = await ProductionUser.findById(productionPersonId);
+    const users = await allUsersSchema.find({ fcmToken: { $ne: null } });
 
+    users.forEach((prod) => {
+      orderUpdateNotification(prod.fcmToken, updatedBy, order.partyName);
+    });
     // Save the updated order
     await order.save();
-
     // Return success response
     res.status(200).json({
       message: "Production status updated successfully.",
