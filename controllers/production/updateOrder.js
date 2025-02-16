@@ -80,9 +80,29 @@ export const updateProductionStatus = async (req, res) => {
     // const production = await ProductionUser.findById(productionPersonId);
     const users = await allUsersSchema.find({ fcmToken: { $ne: null } });
 
-    users.forEach((prod) => {
-      orderUpdateNotification(prod.fcmToken, updatedBy, order.partyName);
-    });
+    // users.forEach((prod) => {
+    //   orderUpdateNotification(prod.fcmToken, updatedBy, order.partyName);
+    // });
+    try {
+      await Promise.all(
+        users.map((user) =>
+          orderUpdateNotification(
+            user.fcmToken,
+            updatedBy,
+            order.partyName
+          ).catch((error) => {
+            console.error(
+              `Failed to send notification to ${user.email}:`,
+              error
+            );
+            return null; // Ensures failure doesn't affect other notifications
+          })
+        )
+      );
+    } catch (err) {
+      console.error("Unexpected error in sending notifications:", err);
+    }
+
     // Save the updated order
     await order.save();
     // Return success response

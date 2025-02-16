@@ -1,5 +1,6 @@
 import Order from "../../models/orderSchema.js";
 import moment from "moment-timezone";
+import { orderUpdateDeliveryNotification } from "../admin/myNotification.js";
 export const listOrdersWithProductionDone = async (req, res) => {
   try {
     // Query to find orders with productionTeam.status = 'Done'
@@ -110,7 +111,25 @@ export const updateDeliveryStatus = async (req, res) => {
       order.deliveryTeam.arrivedDate = now.format("YYYY-MM-DD");
       order.deliveryTeam.arrivedTime = now.format("hh:mm A");
     }
-
+    try {
+      await Promise.all(
+        users.map((user) =>
+          orderUpdateDeliveryNotification(
+            user.fcmToken,
+            updatedBy,
+            order.partyName
+          ).catch((error) => {
+            console.error(
+              `Failed to send notification to ${user.email}:`,
+              error
+            );
+            return null; // Ensures failure doesn't affect other notifications
+          })
+        )
+      );
+    } catch (err) {
+      console.error("Unexpected error in sending notifications:", err);
+    }
     // Save the updated order
     await order.save();
 

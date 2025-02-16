@@ -105,9 +105,32 @@ export const createOrder = async (req, res) => {
     const users = await allUsersSchema.find({ fcmToken: { $ne: null } });
 
     // Loop through the users and send a notification to each FCM token
-    users.forEach((user) => {
-      sendNotification(user.fcmToken, partyName);
-    });
+    // users.forEach((user) => {
+    //   sendNotification(user.fcmToken, partyName);
+    // });
+    // await Promise.all(
+    //   users.map((user) =>
+    //     sendNotification(user.fcmToken, partyName).catch((error) => {
+    //       console.error(`Failed to send notification to ${user.email}:`, error);
+    //     })
+    //   )
+    // );
+    try {
+      await Promise.all(
+        users.map((user) =>
+          sendNotification(user.fcmToken, partyName).catch((error) => {
+            console.error(
+              `Failed to send notification to ${user.email}:`,
+              error
+            );
+            return null; // Ensures failure doesn't affect other notifications
+          })
+        )
+      );
+    } catch (err) {
+      console.error("Unexpected error in sending notifications:", err);
+    }
+
     res.status(201).json({
       message: "Order created successfully with an item.",
       order: newOrder,
