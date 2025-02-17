@@ -96,7 +96,7 @@ const SECRET = "MATRESS";
 //   }
 // };
 export const loginUser = async (req, res) => {
-  console.log("Login");
+  console.log("Login njnj");
   try {
     const { email, password, fcmtoken } = req.body;
     console.log(email, password, fcmtoken);

@@ -86,10 +86,11 @@ export const updateProductionStatus = async (req, res) => {
     try {
       await Promise.all(
         users.map((user) =>
-          orderUpdateNotification(
+          sendNotification(
             user.fcmToken,
             updatedBy,
-            order.partyName
+            order.partyName,
+            "Production"
           ).catch((error) => {
             console.error(
               `Failed to send notification to ${user.email}:`,

@@ -25,18 +25,41 @@ export const getAccessToken = async (req,res) => {
     }
   };
 
-export const sendNotification = async (fcmToken,partyName) => {
+export const sendNotification = async (fcmToken,partyName,updatedBy,team) => {
     const accessToken = await getAccessToken();
-  
-    const message = {
-      message: {
-        token: fcmToken, // Dynamically pass the token
-        notification: {
-          title: "New Order Created",
-          body:`A new order has been created for ${partyName}. Check it out!`,
+    let message="";
+    if (team === "Production") {
+      message = {
+        message: {
+          token: fcmToken, 
+          notification: {
+            title: "🛠️ Production Update!",
+            body: `🔔 An order for ${partyName} has been updated by ${updatedBy}. Stay on top of it now! 🚀`,
+          },
         },
-      },
-    };
+      };
+    } else if (team === "Delivery") {
+      message = {
+        message: {
+          token: fcmToken, 
+          notification: {
+            title: "🚚 Delivery Alert!",
+            body: `📦 Your order for ${partyName} is on the move! Track it now. ⏳`,
+          },
+        },
+      };
+    } else {
+      message = {
+        message: {
+          token: fcmToken, 
+          notification: {
+            title: "📢 New Sales Order!",
+            body: `✨ Exciting news! A new sales order has been placed for ${partyName}. Check the details now. 🔍`,
+          },
+        },
+      };
+    }
+    
   
     try {
       const response = await axios.post(
