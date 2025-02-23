@@ -3,18 +3,22 @@ import {
   addItemName,
   addSize,
   addSizesAndNames,
+  addStock,
   addUser,
   deleteItemName,
   deleteOrderByOrderNo,
   deleteSize,
+  deleteStock,
   deleteUser,
   filterOrders,
+  getAllStocks,
   getAllUsers,
   getOnlyNames,
   getOnlySizes,
   getOrderDetails,
   getSizes,
   listOrdersWithDeliveryDone,
+  updateStock,
 } from "../controllers/admin/adminController.js"; // import { signin, signup } from "../controllers/userController.js";
 import { auth } from "../middleware/auth.js";
 const adminRouter = express.Router();
@@ -35,6 +39,10 @@ adminRouter.get("/getOnlySizes", getOnlySizes);
 adminRouter.get("/getOnlyNames", getOnlyNames);
 adminRouter.post("/add1", addSizesAndNames);
 adminRouter.delete("/deleteUser/:id", deleteUser);
+adminRouter.post("/addStock", addStock);
+adminRouter.put("/updateStock/:itemName", updateStock);
+adminRouter.delete("/deleteStock/:itemName", deleteStock);
+adminRouter.get("/allStocks", getAllStocks);
 // adminRouter.post("/signin", );
 
 // adminRouter.get("/profile", auth, getUserProfile);

@@ -13,6 +13,7 @@ import path from "path";
 import { Readable } from "stream";
 import sizeAndNames from "../../models/numbersSchema.js";
 import sizeAndNamesSchema from "../../models/numbersSchema.js";
+import Stock from "../../models/stockSchema.js";
 const SECRET = "MATRESS";
 
 export const addUser = async (req, res) => {
@@ -786,5 +787,67 @@ export const deleteUser = async (req, res) => {
     res.status(200).json({ message: "User deleted successfully" });
   } catch (error) {
     res.status(500).json({ message: "Failed to delete user", error });
+  }
+};
+
+// Fetch all stock items
+export const getAllStocks = async (req, res) => {
+  try {
+    const stocks = await Stock.find();
+    res.status(200).json(stocks);
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Failed to fetch stocks", error: error.message });
+  }
+};
+
+// Add a new stock item
+export const addStock = async (req, res) => {
+  console.log("req.body", req.body);
+  const { itemName, stock } = req.body;
+  try {
+    const newStock = new Stock({ itemName, stock });
+    await newStock.save();
+    res.status(201).json(newStock);
+  } catch (error) {
+    res
+      .status(400)
+      .json({ message: "Failed to add stock", error: error.message });
+  }
+};
+export const updateStock = async (req, res) => {
+  const { itemName } = req.params;
+  const { stock } = req.body;
+  try {
+    const updatedStock = await Stock.findOneAndUpdate(
+      { itemName },
+      { stock },
+      { new: true }
+    );
+    if (!updatedStock) {
+      return res.status(404).json({ message: "Stock item not found" });
+    }
+    res.status(200).json(updatedStock);
+  } catch (error) {
+    res
+      .status(400)
+      .json({ message: "Failed to update stock", error: error.message });
+  }
+};
+
+// Delete stock by itemName
+export const deleteStock = async (req, res) => {
+  const { itemName } = req.params;
+  try {
+    const deletedStock = await Stock.findOneAndDelete({ itemName });
+    if (!deletedStock) {
+      return res.status(404).json({ message: "Stock item not found" });
+    }
+    res.status(200).json({ message: "Stock item deleted", deletedStock });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Failed to delete stock", error: error.message });
   }
 };

@@ -1,6 +1,125 @@
+export const createOrder = async (req, res) => {
+  try {
+    const { partyName, city, mobileNo, remarks, createdBy } = req.body;
+    let items = req.body.items;
+
+    const salesPersonId = req.userId;
+    const salesPersonName = req.userName;
+
+    console.log(req.body); // Debugging line
+
+    // Ensure `items` is parsed properly before accessing it
+    try {
+      items = typeof items === "string" ? JSON.parse(items) : items;
+    } catch (error) {
+      return res.status(400).json({ message: "Invalid items format." });
+    }
+
+    // Validate parsed items
+    if (!Array.isArray(items) || items.length === 0) {
+      return res
+        .status(400)
+        .json({ message: "Items should be a non-empty array." });
+    }
+
+    const randomSixDigit = Math.floor(100000 + Math.random() * 900000);
+    const orderNo = `ORD-${randomSixDigit}`;
+
+    let serialNumber;
+    const counter = await Counter.findOneAndUpdate(
+      { name: "orderSerial" },
+      { $inc: { value: 1 } },
+      { new: true, upsert: true }
+    );
+    serialNumber = counter.value;
+
+    const itemImage = req.file;
+    let imageUrl = "";
+
+    if (itemImage) {
+      const bufferStream = new Readable();
+      bufferStream.push(itemImage.buffer);
+      bufferStream.push(null);
+
+      imageUrl = await new Promise((resolve, reject) => {
+        const uploadStream = cloudinary.v2.uploader.upload_stream(
+          { folder: "orders" },
+          (error, result) => {
+            if (error) reject(error);
+            else resolve(result.secure_url);
+          }
+        );
+        bufferStream.pipe(uploadStream);
+      });
+    }
+
+    // Process first item in items array (assuming only one item)
+    const processedItem = items[0];
+    const formattedItem = {
+      itemName: processedItem.itemName,
+      size: processedItem.size,
+      quantity: processedItem.quantity,
+      imageUrl,
+      layers: processedItem.layers.map((layer) => ({
+        layerNumber: layer.layerNumber,
+        size: layer.size || null,
+        quantity: layer.quantity || 0,
+      })),
+    };
+
+    console.log("Formatted Item:", formattedItem); // Debugging line
+
+    const newOrder = new Order({
+      serialNumber,
+      salesPerson: {
+        id: salesPersonId,
+        name: salesPersonName,
+        remarks: remarks || null,
+        createdBy: createdBy || null,
+      },
+      orderNo,
+      partyName,
+      city,
+      mobileNo,
+      item: formattedItem, // Ensure this matches your schema
+    });
+
+    await newOrder.save();
+    res
+      .status(201)
+      .json({ message: "Order created successfully", order: newOrder });
+  } catch (error) {
+    console.error("Order Creation Error:", error);
+    res
+      .status(500)
+      .json({ message: "Error while creating order.", error: error.message });
+  }
+};
+
+
+
 import mongoose from "mongoose";
 import moment from "moment-timezone";
 
+// const itemSchema = new mongoose.Schema({
+//   itemName: {
+//     type: String,
+//     required: true,
+//   },
+
+//   imageUrl: {
+//     type: String, // Single string for the image URL
+//     // required: true, // Image is required
+//   },
+//   size: {
+//     type: String,
+//     required: true,
+//   },
+//   quantity: {
+//     type: String,
+//     required: true,
+//   },
+// });
 const itemSchema = new mongoose.Schema({
   itemName: {
     type: String,

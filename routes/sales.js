@@ -1,5 +1,6 @@
 import express from "express";
 import {
+  createFoamOrder,
   createOrder,
   getLatestOrderBySalesPerson,
   getOrdersBySalesPerson,
@@ -16,6 +17,13 @@ salesRouter.post(
 
   upload.single("itemImage"),
   createOrder
+);
+salesRouter.post(
+  "/create-foam",
+  auth, // Allow up to 20 files
+
+  upload.single("itemImage"),
+  createFoamOrder
 );
 salesRouter.get("/myOrders", auth, getOrdersBySalesPerson);
 salesRouter.get("/latestOrder", auth, getLatestOrderBySalesPerson);
