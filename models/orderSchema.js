@@ -47,7 +47,7 @@ const orderSchema = new mongoose.Schema({
     },
     assignedDate: {
       type: String,
-      default: () => moment().tz("Asia/Kolkata").format("YYYY-MM-DD"), // Date when assigned
+      default: () => moment().tz("Asia/Kolkata").format("DD-MM-YYYY"), // Date when assigned
     },
     assignedTime: {
       type: String,
@@ -157,7 +157,7 @@ const orderSchema = new mongoose.Schema({
   orderDate: {
     type: String,
     required: true,
-    default: () => moment().tz("Asia/Kolkata").format("YYYY-MM-DD"), // Default in IST
+    default: () => moment().tz("Asia/Kolkata").format("DD-MM-YYYY"), // Default in IST
   },
   orderTime: {
     type: String,
@@ -189,7 +189,7 @@ const orderSchema = new mongoose.Schema({
 // Pre-save middleware to ensure date and time are always formatted
 orderSchema.pre("save", function (next) {
   const now = moment().tz("Asia/Kolkata");
-  this.orderDate = now.format("YYYY-MM-DD"); // Set to IST date
+  this.orderDate = now.format("DD-MM-YYYY"); // Set to IST date
 
   this.orderTime = now.format("hh:mm A"); // Set to IST time in 12-hour format
   next();
