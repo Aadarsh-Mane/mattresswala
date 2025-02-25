@@ -229,16 +229,12 @@ export const createFoamOrder = async (req, res) => {
     const salesPersonId = req.userId;
     const salesPersonName = req.userName;
 
-    console.log(req.body); // Debugging line
-
-    // Ensure `items` is parsed properly before accessing it
     try {
       items = typeof items === "string" ? JSON.parse(items) : items;
     } catch (error) {
       return res.status(400).json({ message: "Invalid items format." });
     }
 
-    // Validate parsed items
     if (!Array.isArray(items) || items.length === 0) {
       return res
         .status(400)
@@ -255,18 +251,19 @@ export const createFoamOrder = async (req, res) => {
       { new: true, upsert: true }
     );
     serialNumber = counter.value;
-
-    const itemImage = req.file;
+    const itemImage = req.file; // Use req.file when using upload.single()
     let imageUrl = "";
 
+    // Upload image to Google Drive if available
     if (itemImage) {
       const bufferStream = new Readable();
       bufferStream.push(itemImage.buffer);
       bufferStream.push(null);
 
+      // Upload to Cloudinary
       imageUrl = await new Promise((resolve, reject) => {
         const uploadStream = cloudinary.v2.uploader.upload_stream(
-          { folder: "orders" },
+          { folder: "orders" }, // Optional folder name in Cloudinary
           (error, result) => {
             if (error) reject(error);
             else resolve(result.secure_url);
@@ -275,22 +272,47 @@ export const createFoamOrder = async (req, res) => {
         bufferStream.pipe(uploadStream);
       });
     }
-
-    // Process first item in items array (assuming only one item)
     const processedItem = items[0];
     const formattedItem = {
       itemName: processedItem.itemName,
       size: processedItem.size,
       quantity: processedItem.quantity,
-      imageUrl,
+      imageUrl: imageUrl,
       layers: processedItem.layers.map((layer) => ({
+        subitemName: layer.subitemName,
         layerNumber: layer.layerNumber,
         size: layer.size || null,
         quantity: layer.quantity || 0,
       })),
     };
 
-    console.log("Formatted Item:", formattedItem); // Debugging line
+    const stockRecord = await Stock.findOne({
+      itemName: formattedItem.itemName,
+    });
+    if (!stockRecord) {
+      return res.status(400).json({
+        message: `Stock record not found for ${formattedItem.itemName}.`,
+      });
+    }
+
+    for (const layer of formattedItem.layers) {
+      const subitem = stockRecord.subitems.find(
+        (s) => s.subitemName === layer.subitemName
+      );
+      if (!subitem) {
+        return res.status(400).json({
+          message: `Subitem ${layer.subitemName} not found in stock.`,
+        });
+      }
+      if (subitem.stock < layer.quantity) {
+        return res.status(400).json({
+          message: `Not enough stock available for subitem ${layer.subitemName}.`,
+        });
+      }
+      subitem.stock -= layer.quantity;
+    }
+
+    await stockRecord.save();
 
     const newOrder = new Order({
       serialNumber,
@@ -304,48 +326,9 @@ export const createFoamOrder = async (req, res) => {
       partyName,
       city,
       mobileNo,
-      item: formattedItem, // Ensure this matches your schema
-    });
-    const stockRecord = await Stock.findOne({
-      itemName: formattedItem.itemName,
+      item: formattedItem,
     });
 
-    if (!stockRecord) {
-      return res.status(400).json({
-        message: `Stock record not found for ${formattedItem.itemName}.`,
-      });
-    }
-
-    // Calculate total quantity ordered
-    const totalOrderedQuantity = formattedItem.layers.reduce(
-      (sum, layer) => sum + (layer.quantity || 0),
-      0
-    );
-
-    if (stockRecord.stock < totalOrderedQuantity) {
-      return res.status(400).json({
-        message: `Not enough stock available for ${formattedItem.itemName}.`,
-      });
-    }
-
-    // Deduct stock
-    stockRecord.stock -= totalOrderedQuantity;
-    await stockRecord.save();
-    try {
-      await Promise.all(
-        users.map((user) =>
-          sendNotification(user.fcmToken, partyName).catch((error) => {
-            console.error(
-              `Failed to send notification to ${user.email}:`,
-              error
-            );
-            return null; // Ensures failure doesn't affect other notifications
-          })
-        )
-      );
-    } catch (err) {
-      console.error("Unexpected error in sending notifications:", err);
-    }
     await newOrder.save();
     res
       .status(201)

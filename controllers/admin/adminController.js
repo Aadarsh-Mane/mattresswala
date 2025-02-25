@@ -791,6 +791,8 @@ export const deleteUser = async (req, res) => {
 };
 
 // Fetch all stock items
+
+// Get all stocks
 export const getAllStocks = async (req, res) => {
   try {
     const stocks = await Stock.find();
@@ -802,12 +804,13 @@ export const getAllStocks = async (req, res) => {
   }
 };
 
-// Add a new stock item
+// Add a new stock item with subitems
 export const addStock = async (req, res) => {
   console.log("req.body", req.body);
-  const { itemName, stock } = req.body;
+  const { itemName, subitems } = req.body;
+
   try {
-    const newStock = new Stock({ itemName, stock });
+    const newStock = new Stock({ itemName, subitems });
     await newStock.save();
     res.status(201).json(newStock);
   } catch (error) {
@@ -816,17 +819,23 @@ export const addStock = async (req, res) => {
       .json({ message: "Failed to add stock", error: error.message });
   }
 };
+
+// Update stock of a specific subitem
 export const updateStock = async (req, res) => {
-  const { itemName } = req.params;
+  const { itemName, subitemName } = req.params;
   const { stock } = req.body;
+
   try {
     const updatedStock = await Stock.findOneAndUpdate(
-      { itemName },
-      { stock },
+      { itemName, "subitems.subitemName": subitemName },
+      { $set: { "subitems.$.stock": stock } },
       { new: true }
     );
+
     if (!updatedStock) {
-      return res.status(404).json({ message: "Stock item not found" });
+      return res
+        .status(404)
+        .json({ message: "Stock item or subitem not found" });
     }
     res.status(200).json(updatedStock);
   } catch (error) {
@@ -836,7 +845,7 @@ export const updateStock = async (req, res) => {
   }
 };
 
-// Delete stock by itemName
+// Delete stock item by itemName
 export const deleteStock = async (req, res) => {
   const { itemName } = req.params;
   try {
@@ -849,5 +858,77 @@ export const deleteStock = async (req, res) => {
     res
       .status(500)
       .json({ message: "Failed to delete stock", error: error.message });
+  }
+};
+export const addSubItem = async (req, res) => {
+  const { itemId } = req.params;
+  const { subitemName, stock } = req.body;
+
+  try {
+    const item = await Stock.findById(itemId);
+    if (!item) return res.status(404).json({ message: "Item not found" });
+
+    item.subitems.push({ subitemName, stock });
+    await item.save();
+
+    res.status(201).json(item);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+// Update subitem by itemId and subitemId
+export const updateSubItem = async (req, res) => {
+  const { itemId, subitemId } = req.params;
+  const { subitemName, stock } = req.body;
+
+  try {
+    const item = await Stock.findById(itemId);
+    if (!item) return res.status(404).json({ message: "Item not found" });
+
+    const subitem = item.subitems.id(subitemId);
+    if (!subitem) return res.status(404).json({ message: "Subitem not found" });
+
+    // Update subitem fields
+    if (subitemName) subitem.subitemName = subitemName;
+    if (stock !== undefined) subitem.stock = stock;
+
+    await item.save();
+    res.status(200).json(item);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// Delete subitem by itemId and subitemId
+export const deleteSubItem = async (req, res) => {
+  const { itemId, subitemId } = req.params;
+
+  try {
+    const item = await Stock.findById(itemId);
+    if (!item) return res.status(404).json({ message: "Item not found" });
+
+    item.subitems = item.subitems.filter(
+      (subitem) => subitem._id.toString() !== subitemId
+    );
+
+    await item.save();
+    res.status(200).json({ message: "Subitem deleted", item });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+export const addSubitem = async (req, res) => {
+  const { itemId } = req.params;
+  const { subitemName, stock } = req.body;
+
+  try {
+    await Stock.findByIdAndUpdate(
+      itemId,
+      { $push: { subitems: { subitemName, stock } } },
+      { new: true }
+    );
+    res.status(201).send("Subitem added successfully");
+  } catch (err) {
+    res.status(500).send(err.message);
   }
 };

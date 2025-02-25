@@ -4,11 +4,13 @@ import {
   addSize,
   addSizesAndNames,
   addStock,
+  addSubItem,
   addUser,
   deleteItemName,
   deleteOrderByOrderNo,
   deleteSize,
   deleteStock,
+  deleteSubItem,
   deleteUser,
   filterOrders,
   getAllStocks,
@@ -19,6 +21,7 @@ import {
   getSizes,
   listOrdersWithDeliveryDone,
   updateStock,
+  updateSubItem,
 } from "../controllers/admin/adminController.js"; // import { signin, signup } from "../controllers/userController.js";
 import { auth } from "../middleware/auth.js";
 const adminRouter = express.Router();
@@ -41,6 +44,11 @@ adminRouter.post("/add1", addSizesAndNames);
 adminRouter.delete("/deleteUser/:id", deleteUser);
 adminRouter.post("/addStock", addStock);
 adminRouter.put("/updateStock/:itemName", updateStock);
+
+adminRouter.post("/addSubitem/:itemId", addSubItem);
+adminRouter.put("/updateSubitem/:itemId/:subitemId", updateSubItem);
+adminRouter.post("/addSubitem/:itemId", addSubItem);
+adminRouter.delete("/deleteSubitem/:itemId/:subitemId", deleteSubItem);
 adminRouter.delete("/deleteStock/:itemName", deleteStock);
 adminRouter.get("/allStocks", getAllStocks);
 // adminRouter.post("/signin", );

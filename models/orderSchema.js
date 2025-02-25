@@ -18,6 +18,7 @@ const itemSchema = new mongoose.Schema({
   layers: {
     type: [
       {
+        subitemName: { type: String },
         layerNumber: { type: Number }, // Layer 1 to 5
         size: { type: String, required: false },
         quantity: { type: Number, required: false },
