@@ -35,7 +35,7 @@ app.use("/prod", productionRouter);
 app.use("/delivery", deliveryRouter);
 connectDB();
 app.get("/", (req, res) => {
-  return res.status(200).json("Welcome to MattressWala! v2 ❤️");
+  return res.status(200).json("Welcome to MattressWala! v3 ❤️");
 });
 app.post("/login", loginUser);
 app.get("/listOrders", listAllOrders);
