@@ -1042,7 +1042,7 @@ export const addItem = async (req, res) => {
     const newItem = new Stock({ itemName, subitems: [] });
     await newItem.save();
 
-    res.status(201).json({ message: "Item added successfully", item: newItem });
+    res.status(200).json({ message: "Item added successfully", item: newItem });
   } catch (error) {
     res.status(500).json({ message: "Server error", error: error.message });
   }

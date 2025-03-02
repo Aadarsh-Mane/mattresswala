@@ -37,7 +37,7 @@ adminRouter.get("/trackOrder/:orderNo", getOrderDetails);
 adminRouter.get("/filterOrder", filterOrders);
 adminRouter.get("/order-done", listOrdersWithDeliveryDone);
 adminRouter.delete("/delete/:orderNo", deleteOrderByOrderNo);
-adminRouter.post("/addItem", auth, addItemName);
+adminRouter.post("/addItem", addItemName);
 adminRouter.delete("/deleteItemName/:itemNameToDelete", deleteItemName);
 adminRouter.post("/addSize", addSize);
 adminRouter.delete("/deleteSize/:itemName/:subitemName/:size", deleteSize);
