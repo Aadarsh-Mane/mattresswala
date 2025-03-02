@@ -644,29 +644,61 @@ export const addItemName = async (req, res) => {
   }
 };
 
+// export const deleteSize = async (req, res) => {
+//   try {
+//     const { sizeToDelete } = req.params; // The size to delete from the array
+
+//     // Find the record
+//     const record = await sizeAndNamesSchema.findOne();
+
+//     // Check if the size exists in the array
+//     if (!record.size.includes(sizeToDelete)) {
+//       return res.status(400).json({ message: "Size does not exist." });
+//     }
+
+//     // Remove the size from the array
+//     record.size = record.size.filter((size) => size !== sizeToDelete);
+//     await record.save();
+
+//     return res
+//       .status(200)
+//       .json({ message: "Size deleted successfully.", record });
+//   } catch (error) {
+//     return res.status(500).json({ message: error.message });
+//   }
+// };
 export const deleteSize = async (req, res) => {
+  const { itemName, subitemName, size } = req.params;
+
   try {
-    const { sizeToDelete } = req.params; // The size to delete from the array
+    const stock = await Stock.findOne({ itemName });
 
-    // Find the record
-    const record = await sizeAndNamesSchema.findOne();
-
-    // Check if the size exists in the array
-    if (!record.size.includes(sizeToDelete)) {
-      return res.status(400).json({ message: "Size does not exist." });
+    if (!stock) {
+      return res.status(404).json({ message: "Item not found" });
     }
 
-    // Remove the size from the array
-    record.size = record.size.filter((size) => size !== sizeToDelete);
-    await record.save();
+    const subitem = stock.subitems.find((s) => s.subitemName === subitemName);
 
-    return res
-      .status(200)
-      .json({ message: "Size deleted successfully.", record });
-  } catch (error) {
-    return res.status(500).json({ message: error.message });
+    if (!subitem) {
+      return res.status(404).json({ message: "Subitem not found" });
+    }
+
+    const initialSizeCount = subitem.sizes.length;
+    subitem.sizes = subitem.sizes.filter((s) => s.size !== size);
+
+    if (initialSizeCount === subitem.sizes.length) {
+      return res.status(404).json({ message: "Size not found" });
+    }
+
+    await stock.save();
+    res.status(200).json({ message: "Size deleted successfully" });
+  } catch (err) {
+    res
+      .status(500)
+      .json({ message: "Error deleting size", error: err.message });
   }
 };
+
 export const deleteItemName = async (req, res) => {
   try {
     const { itemNameToDelete } = req.params; // The item name to delete from the array
@@ -793,18 +825,18 @@ export const deleteUser = async (req, res) => {
 // Fetch all stock items
 
 // Get all stocks
-export const getAllStocks = async (req, res) => {
-  try {
-    const stocks = await Stock.find();
-    res.status(200).json(stocks);
-  } catch (error) {
-    res
-      .status(500)
-      .json({ message: "Failed to fetch stocks", error: error.message });
-  }
-};
+// export const getAllStocks = async (req, res) => {
+//   try {
+//     const stocks = await Stock.find();
+//     res.status(200).json(stocks);
+//   } catch (error) {
+//     res
+//       .status(500)
+//       .json({ message: "Failed to fetch stocks", error: error.message });
+//   }
+// };
 
-// Add a new stock item with subitems
+// // Add a new stock item with subitems
 export const addStock = async (req, res) => {
   console.log("req.body", req.body);
   const { itemName, subitems } = req.body;
@@ -820,115 +852,431 @@ export const addStock = async (req, res) => {
   }
 };
 
-// Update stock of a specific subitem
-export const updateStock = async (req, res) => {
-  const { itemName, subitemName } = req.params;
-  const { stock } = req.body;
+// // Update stock of a specific subitem
+// export const updateStock = async (req, res) => {
+//   const { itemName, subitemName } = req.params;
+//   const { stock } = req.body;
+
+//   try {
+//     const updatedStock = await Stock.findOneAndUpdate(
+//       { itemName, "subitems.subitemName": subitemName },
+//       { $set: { "subitems.$.stock": stock } },
+//       { new: true }
+//     );
+
+//     if (!updatedStock) {
+//       return res
+//         .status(404)
+//         .json({ message: "Stock item or subitem not found" });
+//     }
+//     res.status(200).json(updatedStock);
+//   } catch (error) {
+//     res
+//       .status(400)
+//       .json({ message: "Failed to update stock", error: error.message });
+//   }
+// };
+
+// // Delete stock item by itemName
+// export const deleteStock = async (req, res) => {
+//   const { itemName } = req.params;
+//   try {
+//     const deletedStock = await Stock.findOneAndDelete({ itemName });
+//     if (!deletedStock) {
+//       return res.status(404).json({ message: "Stock item not found" });
+//     }
+//     res.status(200).json({ message: "Stock item deleted", deletedStock });
+//   } catch (error) {
+//     res
+//       .status(500)
+//       .json({ message: "Failed to delete stock", error: error.message });
+//   }
+// };
+// export const addSubItem = async (req, res) => {
+//   const { itemId } = req.params;
+//   const { subitemName, stock } = req.body;
+
+//   try {
+//     const item = await Stock.findById(itemId);
+//     if (!item) return res.status(404).json({ message: "Item not found" });
+
+//     item.subitems.push({ subitemName, stock });
+//     await item.save();
+
+//     res.status(201).json(item);
+//   } catch (error) {
+//     res.status(500).json({ message: error.message });
+//   }
+// };
+// // Update subitem by itemId and subitemId
+// export const updateSubItem = async (req, res) => {
+//   const { itemId, subitemId } = req.params;
+//   const { subitemName, stock } = req.body;
+
+//   try {
+//     const item = await Stock.findById(itemId);
+//     if (!item) return res.status(404).json({ message: "Item not found" });
+
+//     const subitem = item.subitems.id(subitemId);
+//     if (!subitem) return res.status(404).json({ message: "Subitem not found" });
+
+//     // Update subitem fields
+//     if (subitemName) subitem.subitemName = subitemName;
+//     if (stock !== undefined) subitem.stock = stock;
+
+//     await item.save();
+//     res.status(200).json(item);
+//   } catch (error) {
+//     res.status(500).json({ message: error.message });
+//   }
+// };
+
+// // Delete subitem by itemId and subitemId
+// export const deleteSubItem = async (req, res) => {
+//   const { itemId, subitemId } = req.params;
+
+//   try {
+//     const item = await Stock.findById(itemId);
+//     if (!item) return res.status(404).json({ message: "Item not found" });
+
+//     item.subitems = item.subitems.filter(
+//       (subitem) => subitem._id.toString() !== subitemId
+//     );
+
+//     await item.save();
+//     res.status(200).json({ message: "Subitem deleted", item });
+//   } catch (error) {
+//     res.status(500).json({ message: error.message });
+//   }
+// };
+export const addSubitem = async (req, res) => {
+  const { itemId } = req.params;
+  const { subitemName, size, stock } = req.body;
 
   try {
-    const updatedStock = await Stock.findOneAndUpdate(
-      { itemName, "subitems.subitemName": subitemName },
-      { $set: { "subitems.$.stock": stock } },
-      { new: true }
+    const stockItem = await Stock.findById(itemId);
+    if (!stockItem) return res.status(404).send("Item not found");
+
+    const subitem = stockItem.subitems.find(
+      (sub) => sub.subitemName === subitemName
     );
 
-    if (!updatedStock) {
-      return res
-        .status(404)
-        .json({ message: "Stock item or subitem not found" });
+    if (subitem) {
+      // If subitem exists, push new size-stock pair
+      subitem.sizes.push({ size, stock });
+    } else {
+      // If subitem doesn't exist, add it
+      stockItem.subitems.push({
+        subitemName,
+        sizes: [{ size, stock }],
+      });
     }
-    res.status(200).json(updatedStock);
+
+    await stockItem.save();
+    res.status(201).send("Subitem added/updated successfully");
+  } catch (err) {
+    res.status(500).send(err.message);
+  }
+};
+export const getAllStocks = async (req, res) => {
+  try {
+    const stocks = await Stock.find();
+    res.status(200).json(stocks);
   } catch (error) {
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+export const addSubitem1 = async (req, res) => {
+  try {
+    const { itemName, subitemName, sizes } = req.body;
+
+    // Validate input
+    if (
+      !itemName ||
+      !subitemName ||
+      !Array.isArray(sizes) ||
+      sizes.length === 0
+    ) {
+      return res.status(400).json({ message: "Invalid input data" });
+    }
+
+    // Find the item by itemName
+    const stockItem = await Stock.findOne({ itemName });
+    if (!stockItem) {
+      return res.status(404).json({ message: "Item not found" });
+    }
+
+    // Check if subitem already exists
+    const subitemExists = stockItem.subitems.some(
+      (subitem) => subitem.subitemName === subitemName
+    );
+
+    if (subitemExists) {
+      return res.status(400).json({ message: "Subitem already exists" });
+    }
+
+    // Add new subitem with sizes and quantities
+    stockItem.subitems.push({ subitemName, sizes });
+    await stockItem.save();
+
     res
-      .status(400)
-      .json({ message: "Failed to update stock", error: error.message });
+      .status(201)
+      .json({ message: "Subitem added successfully", item: stockItem });
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+export const addItem = async (req, res) => {
+  try {
+    const { itemName } = req.body;
+
+    if (!itemName) {
+      return res.status(400).json({ message: "Item name is required" });
+    }
+
+    const existingItem = await Stock.findOne({ itemName });
+    if (existingItem) {
+      return res.status(400).json({ message: "Item name already exists" });
+    }
+
+    const newItem = new Stock({ itemName, subitems: [] });
+    await newItem.save();
+
+    res.status(201).json({ message: "Item added successfully", item: newItem });
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+export const addMultipleSubitems = async (req, res) => {
+  try {
+    const { itemName, subitems } = req.body;
+
+    if (!itemName || !Array.isArray(subitems) || subitems.length === 0) {
+      return res.status(400).json({ message: "Invalid input data" });
+    }
+
+    const stockItem = await Stock.findOne({ itemName });
+    if (!stockItem) {
+      return res.status(404).json({ message: "Item not found" });
+    }
+
+    subitems.forEach((newSubitem) => {
+      const existingSubitem = stockItem.subitems.find(
+        (subitem) => subitem.subitemName === newSubitem.subitemName
+      );
+
+      if (existingSubitem) {
+        // Merge sizes if subitem exists
+        newSubitem.sizes.forEach((newSize) => {
+          const existingSize = existingSubitem.sizes.find(
+            (size) => size.size === newSize.size
+          );
+
+          if (existingSize) {
+            existingSize.quantity += newSize.quantity; // Update stock
+          } else {
+            existingSubitem.sizes.push({
+              size: newSize.size,
+              quantity: newSize.quantity,
+            });
+          }
+        });
+      } else {
+        // Add new subitem if not found
+        stockItem.subitems.push({
+          subitemName: newSubitem.subitemName,
+          sizes: newSubitem.sizes.map((size) => ({
+            size: size.size,
+            quantity: size.quantity,
+          })),
+        });
+      }
+    });
+
+    await stockItem.save();
+    res.status(201).json({
+      message: "Subitems added/updated successfully",
+      item: stockItem,
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error: error.message });
   }
 };
 
-// Delete stock item by itemName
-export const deleteStock = async (req, res) => {
-  const { itemName } = req.params;
+export const updateQuantity = async (req, res) => {
   try {
-    const deletedStock = await Stock.findOneAndDelete({ itemName });
-    if (!deletedStock) {
-      return res.status(404).json({ message: "Stock item not found" });
+    const { itemName, subitemName, size, quantity } = req.body;
+
+    if (!itemName || !subitemName || !size || quantity === undefined) {
+      return res.status(400).json({ message: "All fields are required" });
     }
-    res.status(200).json({ message: "Stock item deleted", deletedStock });
+
+    const stockItem = await Stock.findOne({ itemName });
+    if (!stockItem) {
+      return res.status(404).json({ message: "Item not found" });
+    }
+
+    const subitem = stockItem.subitems.find(
+      (sub) => sub.subitemName === subitemName
+    );
+    if (!subitem) {
+      return res.status(404).json({ message: "Subitem not found" });
+    }
+
+    const sizeEntry = subitem.sizes.find((s) => s.size === size);
+    if (!sizeEntry) {
+      return res.status(404).json({ message: "Size not found" });
+    }
+
+    sizeEntry.quantity = quantity;
+    await stockItem.save();
+
+    res
+      .status(200)
+      .json({ message: "Quantity updated successfully", item: stockItem });
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+export const updateSizeOrQuantity = async (req, res) => {
+  console.log("req.body", req.body);
+  try {
+    const { itemName, subitemName, size, quantity } = req.body;
+
+    if (!itemName || !subitemName || !size || quantity === undefined) {
+      return res.status(400).json({ message: "Invalid input data" });
+    }
+
+    const stockItem = await Stock.findOne({ itemName });
+    if (!stockItem) {
+      return res.status(404).json({ message: "Item not found" });
+    }
+
+    const subitem = stockItem.subitems.find(
+      (sub) => sub.subitemName === subitemName
+    );
+
+    if (!subitem) {
+      return res.status(404).json({ message: "Subitem not found" });
+    }
+
+    const sizeToUpdate = subitem.sizes.find((s) => s.size === size);
+
+    if (!sizeToUpdate) {
+      return res.status(404).json({ message: "Size not found" });
+    }
+
+    sizeToUpdate.quantity = quantity;
+
+    await stockItem.save();
+    res.status(200).json({
+      message: "Size quantity updated successfully",
+      item: stockItem,
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+// Delete an item by itemName
+export const deleteItem = async (req, res) => {
+  try {
+    const { itemName } = req.params;
+    const result = await Stock.findOneAndDelete({ itemName });
+
+    if (!result) {
+      return res.status(404).json({ message: "Item not found" });
+    }
+
+    res.status(200).json({ message: "Item deleted successfully" });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// Delete a subitem by subitemName within a specific item
+export const deleteSubitem = async (req, res) => {
+  try {
+    const { itemName, subitemName } = req.params;
+
+    const result = await Stock.findOneAndUpdate(
+      { itemName },
+      { $pull: { subitems: { subitemName } } },
+      { new: true }
+    );
+
+    if (!result) {
+      return res.status(404).json({ message: "Item or subitem not found" });
+    }
+
+    res
+      .status(200)
+      .json({ message: "Subitem deleted successfully", data: result });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+export const addSizesToSubitem = async (req, res) => {
+  const { itemName, subitemName, sizesWithQuantities } = req.body;
+  try {
+    const stock = await Stock.findOne({ itemName });
+
+    if (!stock) {
+      console.log("Item not found");
+      return;
+    }
+
+    const subitem = stock.subitems.find((s) => s.subitemName === subitemName);
+
+    if (!subitem) {
+      console.log("Subitem not found");
+      return;
+    }
+
+    sizesWithQuantities.forEach(({ size, quantity }) => {
+      const sizeIndex = subitem.sizes.findIndex((s) => s.size === size);
+
+      if (sizeIndex !== -1) {
+        subitem.sizes[sizeIndex].quantity += quantity; // Update existing size quantity
+      } else {
+        subitem.sizes.push({ size, quantity }); // Add new size and quantity
+      }
+    });
+
+    await stock.save();
+    res.status(200).json({ message: "Sizes added/updated successfully" });
+    console.log("Sizes added/updated successfully");
+  } catch (err) {
+    res.status(500).json({ message: "Server error", error: err.message });
+    console.error("Error updating sizes:", err);
+  }
+};
+export const updatePaymentStatus = async (req, res) => {
+  const { orderNo, paymentStatus } = req.body;
+
+  const validStatuses = ["Pending", "Completed", "Partial"];
+
+  if (!validStatuses.includes(paymentStatus)) {
+    return res.status(400).json({ error: "Invalid payment status." });
+  }
+
+  try {
+    const updatedOrder = await Order.findOneAndUpdate(
+      { orderNo }, // Correct filter format
+      { payment: paymentStatus },
+      { new: true }
+    );
+
+    if (!updatedOrder) {
+      return res.status(404).json({ error: "Order not found." });
+    }
+
+    res
+      .status(200)
+      .json({ message: "Payment status updated successfully.", updatedOrder });
   } catch (error) {
     res
       .status(500)
-      .json({ message: "Failed to delete stock", error: error.message });
-  }
-};
-export const addSubItem = async (req, res) => {
-  const { itemId } = req.params;
-  const { subitemName, stock } = req.body;
-
-  try {
-    const item = await Stock.findById(itemId);
-    if (!item) return res.status(404).json({ message: "Item not found" });
-
-    item.subitems.push({ subitemName, stock });
-    await item.save();
-
-    res.status(201).json(item);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
-// Update subitem by itemId and subitemId
-export const updateSubItem = async (req, res) => {
-  const { itemId, subitemId } = req.params;
-  const { subitemName, stock } = req.body;
-
-  try {
-    const item = await Stock.findById(itemId);
-    if (!item) return res.status(404).json({ message: "Item not found" });
-
-    const subitem = item.subitems.id(subitemId);
-    if (!subitem) return res.status(404).json({ message: "Subitem not found" });
-
-    // Update subitem fields
-    if (subitemName) subitem.subitemName = subitemName;
-    if (stock !== undefined) subitem.stock = stock;
-
-    await item.save();
-    res.status(200).json(item);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
-
-// Delete subitem by itemId and subitemId
-export const deleteSubItem = async (req, res) => {
-  const { itemId, subitemId } = req.params;
-
-  try {
-    const item = await Stock.findById(itemId);
-    if (!item) return res.status(404).json({ message: "Item not found" });
-
-    item.subitems = item.subitems.filter(
-      (subitem) => subitem._id.toString() !== subitemId
-    );
-
-    await item.save();
-    res.status(200).json({ message: "Subitem deleted", item });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
-export const addSubitem = async (req, res) => {
-  const { itemId } = req.params;
-  const { subitemName, stock } = req.body;
-
-  try {
-    await Stock.findByIdAndUpdate(
-      itemId,
-      { $push: { subitems: { subitemName, stock } } },
-      { new: true }
-    );
-    res.status(201).send("Subitem added successfully");
-  } catch (err) {
-    res.status(500).send(err.message);
+      .json({ error: "Internal server error.", details: error.message });
   }
 };

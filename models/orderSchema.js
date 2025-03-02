@@ -18,10 +18,26 @@ const itemSchema = new mongoose.Schema({
   layers: {
     type: [
       {
-        subitemName: { type: String },
-        layerNumber: { type: Number }, // Layer 1 to 5
-        size: { type: String, required: false },
-        quantity: { type: Number, required: false },
+        subitemName: {
+          type: String,
+          required: true,
+        },
+        layerNumber: {
+          type: Number,
+          required: true,
+        },
+        sizes: [
+          {
+            size: {
+              type: String,
+              required: true,
+            },
+            quantity: {
+              type: Number,
+              required: true,
+            },
+          },
+        ],
       },
     ],
   },
@@ -184,6 +200,10 @@ const orderSchema = new mongoose.Schema({
     required: true,
     enum: ["Order Created", "Ready", "Dispatched"],
     default: "Order Created", // Default status
+  },
+  payment: {
+    type: String,
+    default: "Pending",
   },
 });
 

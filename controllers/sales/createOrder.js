@@ -221,6 +221,125 @@ export const getLatestOrderBySalesPerson = async (req, res) => {
 //     return res.status(500).json({ message: "Server error, please try again." });
 //   }
 // };
+// export const createFoamOrder = async (req, res) => {
+//   try {
+//     const { partyName, city, mobileNo, remarks, createdBy } = req.body;
+//     let items = req.body.items;
+
+//     const salesPersonId = req.userId;
+//     const salesPersonName = req.userName;
+
+//     try {
+//       items = typeof items === "string" ? JSON.parse(items) : items;
+//     } catch (error) {
+//       return res.status(400).json({ message: "Invalid items format." });
+//     }
+
+//     if (!Array.isArray(items) || items.length === 0) {
+//       return res
+//         .status(400)
+//         .json({ message: "Items should be a non-empty array." });
+//     }
+
+//     const randomSixDigit = Math.floor(100000 + Math.random() * 900000);
+//     const orderNo = `ORD-${randomSixDigit}`;
+
+//     let serialNumber;
+//     const counter = await Counter.findOneAndUpdate(
+//       { name: "orderSerial" },
+//       { $inc: { value: 1 } },
+//       { new: true, upsert: true }
+//     );
+//     serialNumber = counter.value;
+//     const itemImage = req.file; // Use req.file when using upload.single()
+//     let imageUrl = "";
+
+//     // Upload image to Google Drive if available
+//     if (itemImage) {
+//       const bufferStream = new Readable();
+//       bufferStream.push(itemImage.buffer);
+//       bufferStream.push(null);
+
+//       // Upload to Cloudinary
+//       imageUrl = await new Promise((resolve, reject) => {
+//         const uploadStream = cloudinary.v2.uploader.upload_stream(
+//           { folder: "orders" }, // Optional folder name in Cloudinary
+//           (error, result) => {
+//             if (error) reject(error);
+//             else resolve(result.secure_url);
+//           }
+//         );
+//         bufferStream.pipe(uploadStream);
+//       });
+//     }
+//     const processedItem = items[0];
+//     const formattedItem = {
+//       itemName: processedItem.itemName,
+//       size: processedItem.size,
+//       quantity: processedItem.quantity,
+//       imageUrl: imageUrl,
+//       layers: processedItem.layers.map((layer) => ({
+//         subitemName: layer.subitemName,
+//         layerNumber: layer.layerNumber,
+//         size: layer.size || null,
+//         quantity: layer.quantity || 0,
+//       })),
+//     };
+
+//     const stockRecord = await Stock.findOne({
+//       itemName: formattedItem.itemName,
+//     });
+//     if (!stockRecord) {
+//       return res.status(400).json({
+//         message: `Stock record not found for ${formattedItem.itemName}.`,
+//       });
+//     }
+
+//     for (const layer of formattedItem.layers) {
+//       const subitem = stockRecord.subitems.find(
+//         (s) => s.subitemName === layer.subitemName
+//       );
+//       if (!subitem) {
+//         return res.status(400).json({
+//           message: `Subitem ${layer.subitemName} not found in stock.`,
+//         });
+//       }
+//       if (subitem.stock < layer.quantity) {
+//         return res.status(400).json({
+//           message: `Not enough stock available for subitem ${layer.subitemName}.`,
+//         });
+//       }
+//       subitem.stock -= layer.quantity;
+//     }
+
+//     await stockRecord.save();
+
+//     const newOrder = new Order({
+//       serialNumber,
+//       salesPerson: {
+//         id: salesPersonId,
+//         name: salesPersonName,
+//         remarks: remarks || null,
+//         createdBy: createdBy || null,
+//       },
+//       orderNo,
+//       partyName,
+//       city,
+//       mobileNo,
+//       item: formattedItem,
+//     });
+
+//     await newOrder.save();
+//     res
+//       .status(201)
+//       .json({ message: "Order created successfully", order: newOrder });
+//   } catch (error) {
+//     console.error("Order Creation Error:", error);
+//     res
+//       .status(500)
+//       .json({ message: "Error while creating order.", error: error.message });
+//   }
+// };
 export const createFoamOrder = async (req, res) => {
   try {
     const { partyName, city, mobileNo, remarks, createdBy } = req.body;
@@ -254,16 +373,14 @@ export const createFoamOrder = async (req, res) => {
     const itemImage = req.file; // Use req.file when using upload.single()
     let imageUrl = "";
 
-    // Upload image to Google Drive if available
     if (itemImage) {
       const bufferStream = new Readable();
       bufferStream.push(itemImage.buffer);
       bufferStream.push(null);
 
-      // Upload to Cloudinary
       imageUrl = await new Promise((resolve, reject) => {
         const uploadStream = cloudinary.v2.uploader.upload_stream(
-          { folder: "orders" }, // Optional folder name in Cloudinary
+          { folder: "orders" },
           (error, result) => {
             if (error) reject(error);
             else resolve(result.secure_url);
@@ -272,23 +389,28 @@ export const createFoamOrder = async (req, res) => {
         bufferStream.pipe(uploadStream);
       });
     }
+
     const processedItem = items[0];
     const formattedItem = {
       itemName: processedItem.itemName,
-      size: processedItem.size,
-      quantity: processedItem.quantity,
       imageUrl: imageUrl,
       layers: processedItem.layers.map((layer) => ({
         subitemName: layer.subitemName,
         layerNumber: layer.layerNumber,
-        size: layer.size || null,
-        quantity: layer.quantity || 0,
+        sizes: [
+          {
+            // Wrap the size in an array
+            size: layer.size, // Get size directly from layer
+            quantity: layer.quantity, // Get quantity directly from layer
+          },
+        ],
       })),
     };
 
     const stockRecord = await Stock.findOne({
       itemName: formattedItem.itemName,
     });
+
     if (!stockRecord) {
       return res.status(400).json({
         message: `Stock record not found for ${formattedItem.itemName}.`,
@@ -299,17 +421,32 @@ export const createFoamOrder = async (req, res) => {
       const subitem = stockRecord.subitems.find(
         (s) => s.subitemName === layer.subitemName
       );
+
       if (!subitem) {
         return res.status(400).json({
           message: `Subitem ${layer.subitemName} not found in stock.`,
         });
       }
-      if (subitem.stock < layer.quantity) {
-        return res.status(400).json({
-          message: `Not enough stock available for subitem ${layer.subitemName}.`,
-        });
+
+      // Handle single size per layer
+      for (const sizeObj of layer.sizes) {
+        const stockSize = subitem.sizes.find((s) => s.size === sizeObj.size);
+
+        if (!stockSize) {
+          return res.status(400).json({
+            message: `Size ${sizeObj.size} not found for subitem ${layer.subitemName}.`,
+          });
+        }
+
+        if (stockSize.quantity < sizeObj.quantity) {
+          return res.status(400).json({
+            message: `Not enough stock available for size ${sizeObj.size} of subitem ${layer.subitemName}. 
+                      Available: ${stockSize.quantity}, Requested: ${sizeObj.quantity}`,
+          });
+        }
+
+        stockSize.quantity -= sizeObj.quantity;
       }
-      subitem.stock -= layer.quantity;
     }
 
     await stockRecord.save();
