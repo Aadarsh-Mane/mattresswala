@@ -11,6 +11,7 @@ import {
   addUser,
   deleteItem,
   deleteItemName,
+  deleteOrderAndRestore,
   deleteOrderByOrderNo,
   deleteSize,
   deleteSubitem,
@@ -57,6 +58,7 @@ adminRouter.post("/addSubitem/:itemId", addSubitem);
 // adminRouter.delete("/deleteSubitem/:itemId/:subitemId", deleteSubItem);
 // adminRouter.delete("/deleteStock/:itemName", deleteStock);
 adminRouter.get("/allStocks", getAllStocks);
+adminRouter.delete("/deleteOrderAndRestore/:orderNo", deleteOrderAndRestore);
 adminRouter.put("/updateSizeOrQuantity", updateSizeOrQuantity);
 adminRouter.delete("/deleteSubitem/:itemName/:subitemName", deleteSubitem);
 adminRouter.post("/addSizesToSubitem", addSizesToSubitem);

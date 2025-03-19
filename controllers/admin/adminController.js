@@ -821,22 +821,84 @@ export const deleteUser = async (req, res) => {
     res.status(500).json({ message: "Failed to delete user", error });
   }
 };
+export const deleteOrderAndRestore = async (req, res) => {
+  try {
+    const { orderNo } = req.params;
 
-// Fetch all stock items
+    // Find the order to be deleted
+    const order = await Order.findOne({ orderNo });
 
-// Get all stocks
-// export const getAllStocks = async (req, res) => {
-//   try {
-//     const stocks = await Stock.find();
-//     res.status(200).json(stocks);
-//   } catch (error) {
-//     res
-//       .status(500)
-//       .json({ message: "Failed to fetch stocks", error: error.message });
-//   }
-// };
+    if (order.deliveryTeam && order.deliveryTeam.status === "Arrived") {
+      // Order has been already delivered, do nothing
+      return res
+        .status(400)
+        .json({ message: "Order has already been delivered" });
+    }
+    if (!order) {
+      return res.status(404).json({ message: "Order not found" });
+    }
 
-// // Add a new stock item with subitems
+    // Get the items from the order that need to be restored to stock
+    const orderItems = order.item;
+
+    // For each item in the order, restore the stock
+    for (const item of orderItems) {
+      // Find the corresponding stock record
+      const stockRecord = await Stock.findOne({ itemName: item.itemName });
+
+      if (!stockRecord) {
+        return res.status(400).json({
+          message: `Stock record not found for ${item.itemName}.`,
+        });
+      }
+
+      // Go through each layer and restore the quantities
+      for (const layer of item.layers) {
+        const subitem = stockRecord.subitems.find(
+          (s) => s.subitemName === layer.subitemName
+        );
+
+        if (!subitem) {
+          return res.status(400).json({
+            message: `Subitem ${layer.subitemName} not found in stock.`,
+          });
+        }
+
+        // Restore quantities for each size in the layer
+        for (const sizeObj of layer.sizes) {
+          const stockSize = subitem.sizes.find((s) => s.size === sizeObj.size);
+
+          if (!stockSize) {
+            return res.status(400).json({
+              message: `Size ${sizeObj.size} not found for subitem ${layer.subitemName}.`,
+            });
+          }
+
+          // Increment the stock quantity
+          stockSize.quantity += parseInt(sizeObj.quantity);
+        }
+      }
+
+      // Save the updated stock record
+      await stockRecord.save();
+    }
+
+    // Finally, delete the order
+    await Order.deleteOne({ orderNo });
+
+    res.status(200).json({
+      success: true,
+      message: "Order deleted successfully",
+    });
+  } catch (error) {
+    console.error("Order Deletion Error:", error);
+    res.status(500).json({
+      message: "Error while deleting order.",
+      error: error.message,
+    });
+  }
+};
+
 export const addStock = async (req, res) => {
   console.log("req.body", req.body);
   const { itemName, subitems } = req.body;
