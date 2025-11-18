@@ -47,15 +47,61 @@ https://github.com/user-attachments/assets/ec0f2cb0-69af-44a9-b8da-b8ad250d309a
 ## 🧩 Features
 
 ### ✔️ Mobile App
-- Feature 1  
-- Feature 2  
-- Feature 3  
+   Mobile App Features
+
+🔐 Role-based login for Sales, Admin, and Production users
+
+🧾 Order creation with item + sub-item support
+
+🔄 Real-time order status updates
+
+📦 Inventory & stock visibility for each size and subitem
+
+🔔 Push notifications for:
+
+New order assignment
+
+Status update
+
+Production updates
+
+Delivery progress
+
+📊 Dashboard for daily & monthly overviews
+
+🏷️ Sales team workflow: create orders, attach details, check progress
+
+🏭 Production user workflow: update cutting, stitching, packing, ready-to-dispatch
+
+🚚 Delivery workflow with mapped statuses
+
+🔍 Easy search & filter for orders
+
+🧑‍💼 Each team member can update the order at their stage
 - Login, Dashboard, etc.
 
 ### ✔️ Web App
-- Feature 1  
-- Feature 2  
-- Feature 3  
+  🛠️ Admin Panel (full access)
+
+🗂️ Order Management System (OMS) for all departments
+
+📦 Inventory & Stock Management
+
+Track stock per item
+
+Track subitem sizes & quantities
+
+📊 Production Dashboard
+
+📤 Export reports (orders, production, delivery)
+
+🔍 Advanced search, date filters, and sorting
+
+⚡ Real-time updates synced with backend
+
+🔐 Role-based UI visibility based on user type
+
+🌐 Flutter Web responsive layout for desktop use
 - Admin Panel, Management UI, etc.
 
 ---<img width="1280" height="759" alt="Screenshot 2025-11-17 at 6 04 01 PM" src="https://github.com/user-attachments/assets/08d5303d-ccc4-4f36-ac0d-22a8a0200578" />
