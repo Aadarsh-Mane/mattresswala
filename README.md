@@ -9,6 +9,8 @@ This repository showcases the complete UI, workflows, and demo videos for recrui
 
 ### 📸 Screenshots
 <p align="center">
+  <img width="2000" height="1414" alt="Gray Simple Shapes Blank A4 Document Landscape (2)" src="https://github.com/user-attachments/assets/113a41b4-7859-4a08-91aa-cbe22a6d6038" />
+
   <img src="assets/mobile1.png" width="250" />
   <img src="assets/mobile2.png" width="250" />
   <img src="assets/mobile3.png" width="250" />
